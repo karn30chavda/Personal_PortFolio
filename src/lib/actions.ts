@@ -71,7 +71,6 @@ export async function submitToNetlifyForm(
   const validatedFields = contactFormSchema.safeParse(data);
 
   if (!validatedFields.success) {
-    // Extract specific error messages if possible, or a general one
     const errors = validatedFields.error.errors.map(e => e.message).join(', ');
     return {
       success: false,
@@ -82,19 +81,24 @@ export async function submitToNetlifyForm(
   const { name, email, message } = validatedFields.data;
 
   const formData = new URLSearchParams();
-  formData.append('form-name', 'contact'); // This MUST match the 'name' in public/form-definitions.html
+  formData.append('form-name', 'contact'); 
   formData.append('name', name);
   formData.append('email', email);
   formData.append('message', message);
-  // If you added a honeypot in form-definitions.html, ensure it's not filled by legitimate users.
-  // If your client-side form collects it (it shouldn't visibly), pass it here.
-  // formData.append('bot-field', ''); 
-
+  
   try {
-    // For Netlify Forms, when POSTing from a server-side function/action,
-    // you typically POST to your site's root path or the path where the form is "defined".
-    // Using "/" is common. The `process.env.URL` might not be reliable at runtime here.
-    const response = await fetch('/', { 
+    const siteUrl = process.env.URL;
+    if (!siteUrl) {
+        console.error('Netlify site URL (process.env.URL) is not defined. Cannot submit form.');
+        return {
+            success: false,
+            error: "Configuration error on the server. Please contact support if this issue persists."
+        };
+    }
+
+    // We POST to the root of the site (process.env.URL). 
+    // Netlify picks it up based on the 'form-name' field in the payload.
+    const response = await fetch(siteUrl, { 
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData.toString(),
@@ -107,7 +111,7 @@ export async function submitToNetlifyForm(
       console.error("Netlify form submission failed. Status:", response.status, "Response:", responseText);
       return {
         success: false,
-        error: `Form submission to Netlify failed (status: ${response.status}). Error: ${responseText.substring(0, 200)}`
+        error: `Form submission to Netlify failed (status: ${response.status}). Details: ${responseText.substring(0, 200)}`
       };
     }
   } catch (error: any) {
@@ -118,4 +122,3 @@ export async function submitToNetlifyForm(
     };
   }
 }
-
