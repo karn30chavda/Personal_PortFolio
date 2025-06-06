@@ -1,3 +1,4 @@
+
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -16,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { submitContactForm } from "@/lib/actions" // Assuming this action exists or will be created
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
 
@@ -51,22 +51,43 @@ export function ContactForm() {
 
   async function onSubmit(data: ContactFormValues) {
     setIsSubmitting(true)
+    const formData = new URLSearchParams()
+    formData.append('form-name', 'contact') // This should match the name attribute of your form
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value as string)
+    })
+
+    // Append bot-field if it exists, to satisfy Netlify's honeypot, though it's less critical for JS submissions
+    const botField = (document.querySelector('input[name="bot-field"]') as HTMLInputElement)?.value;
+    if (botField) {
+      formData.append('bot-field', botField);
+    }
+
+
     try {
-      const result = await submitContactForm(data)
-      if (result.success) {
+      const response = await fetch("/", { // POST to the same page path where the form is
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString(),
+      })
+
+      if (response.ok) {
         toast({
           title: "Message Sent!",
-          description: "Thanks for reaching out. I'll get back to you soon.",
+          description: "Thanks for reaching out. Netlify will process your message.",
         })
         form.reset()
       } else {
+        const responseText = await response.text();
+        console.error("Netlify form submission error response:", responseText, response.status);
         toast({
           title: "Error",
-          description: result.error || "Something went wrong. Please try again.",
+          description: `Form submission failed (status: ${response.status}). Please try again.`,
           variant: "destructive",
         })
       }
     } catch (error) {
+      console.error("Error submitting form to Netlify:", error)
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -79,7 +100,23 @@ export function ContactForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-card p-6 md:p-8 rounded-lg shadow-lg border border-border">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 bg-card p-6 md:p-8 rounded-lg shadow-lg border border-border"
+        name="contact" // Name for Netlify
+        method="POST"  // Good practice, helps Netlify crawler
+        data-netlify="true"
+        data-netlify-honeypot="bot-field" // For spam protection
+      >
+        {/* Hidden input for Netlify's use with JS forms */}
+        <input type="hidden" name="form-name" value="contact" />
+        {/* Honeypot field for spam, visually hidden */}
+        <p className="hidden">
+          <label>
+            Don’t fill this out if you’re human: <input name="bot-field" />
+          </label>
+        </p>
+
         <FormField
           control={form.control}
           name="name"
