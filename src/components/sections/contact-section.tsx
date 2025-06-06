@@ -2,7 +2,7 @@
 import { SectionWrapper } from '@/components/shared/section-wrapper';
 import { ContactForm } from '@/components/contact-form';
 import { Button } from '@/components/ui/button';
-import { Github, Twitter, Linkedin, Instagram } from 'lucide-react';
+import { Github, Twitter, Linkedin, Instagram, Mail } from 'lucide-react';
 
 export function ContactSection() {
   return (
@@ -35,6 +35,11 @@ export function ContactSection() {
             <a href="https://instagram.com/k_a_r_n_30" target="_blank" rel="noopener noreferrer" aria-label="Instagram Profile">
               <Button variant="outline" size="icon" className="hover:bg-accent/50">
                 <Instagram className="h-5 w-5" />
+              </Button>
+            </a>
+            <a href="mailto:karanchavda543@gmail.com" aria-label="Send an email">
+              <Button variant="outline" size="icon" className="hover:bg-accent/50">
+                <Mail className="h-5 w-5" />
               </Button>
             </a>
           </div>
