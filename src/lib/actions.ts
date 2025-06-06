@@ -81,35 +81,33 @@ export async function submitToNetlifyForm(
 
   const { name, email, message } = validatedFields.data;
 
-  // Prepare data in application/x-www-form-urlencoded format
   const formData = new URLSearchParams();
-  formData.append('form-name', 'contact'); // This MUST match the name attribute of your form in ContactForm.tsx
+  formData.append('form-name', 'contact'); // This MUST match the 'name' in public/form-definitions.html
   formData.append('name', name);
   formData.append('email', email);
   formData.append('message', message);
-  // You can add a honeypot field here if you want, Netlify will respect it
+  // If you added a honeypot in form-definitions.html, ensure it's not filled by legitimate users.
+  // If your client-side form collects it (it shouldn't visibly), pass it here.
   // formData.append('bot-field', ''); 
 
   try {
-    // Netlify forms are submitted to the path where the form is defined, usually '/' or the specific page.
-    // For App Router and server actions, submitting to '/' is standard.
-    const response = await fetch(process.env.URL || '/', { // process.env.URL is available in Netlify build environment
+    // For Netlify Forms, when POSTing from a server-side function/action,
+    // you typically POST to your site's root path or the path where the form is "defined".
+    // Using "/" is common. The `process.env.URL` might not be reliable at runtime here.
+    const response = await fetch('/', { 
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData.toString(),
     });
 
     if (response.ok) {
-      // Netlify typically returns a 200 OK on successful AJAX submission.
-      // You might get a page back, but the status code is key.
       return { success: true };
     } else {
-      // Attempt to get more info from Netlify's response if submission fails
       const responseText = await response.text();
       console.error("Netlify form submission failed. Status:", response.status, "Response:", responseText);
       return {
         success: false,
-        error: `Form submission to Netlify failed (status: ${response.status}). Please try again. Details: ${responseText.substring(0,100)}`
+        error: `Form submission to Netlify failed (status: ${response.status}). Error: ${responseText.substring(0, 200)}`
       };
     }
   } catch (error: any) {
@@ -120,3 +118,4 @@ export async function submitToNetlifyForm(
     };
   }
 }
+
