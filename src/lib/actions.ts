@@ -28,48 +28,51 @@ export async function submitContactForm(
 
   const { name, email, message } = validatedFields.data;
 
-  // --- Email Sending Logic Would Go Here ---
-  // In a real application, you would integrate an email service provider
-  // (e.g., SendGrid, Resend, AWS SES, or Nodemailer with an SMTP service)
-  // to send the email.
+  // --- Send form data to an external service ---
+  // 1. Choose a form handling service (e.g., Formspree, Getform).
+  // 2. Sign up and get your unique endpoint URL.
+  // 3. Replace 'YOUR_FORM_ENDPOINT_HERE' with your actual endpoint.
+  const formEndpoint = 'YOUR_FORM_ENDPOINT_HERE'; // <--- REPLACE THIS
 
-  const recipientEmail = "karanchavda543@gmail.com";
-  const emailSubject = `Contact Form Submission from: ${name}`;
-  const emailBody = `
-    Name: ${name}
-    Email: ${email}
-    Message:
-    ${message}
-  `;
+  if (formEndpoint === 'YOUR_FORM_ENDPOINT_HERE') {
+    console.warn("Contact form submission is not configured. Please replace 'YOUR_FORM_ENDPOINT_HERE' in src/lib/actions.ts with your form service endpoint.");
+    // Simulate success for local testing if not configured
+    return { success: true, error: "Form endpoint not configured by developer (simulation)." };
+  }
 
-  console.log("--- Simulating Email Dispatch ---");
-  console.log(`To: ${recipientEmail}`);
-  console.log(`From: ${email}`); // Note: Sending "From" an unverified user-provided email is often problematic and may lead to spam issues.
-                               // A better practice is to send from your own verified domain email 
-                               // (e.g., no-reply@yourdomain.com) and set the 'Reply-To' header to the user's email.
-  console.log(`Subject: ${emailSubject}`);
-  console.log(`Body:\n${emailBody}`);
-  console.log("--- End of Simulated Email Dispatch ---");
-  
-  // Example of how you might use an email service (pseudo-code):
-  // try {
-  //   await emailService.send({
-  //     to: recipientEmail,
-  //     from: "your-verified-email@example.com", // Use a verified sender
-  //     replyTo: email, // Set user's email as Reply-To
-  //     subject: emailSubject,
-  //     text: emailBody, // Or HTML content
-  //   });
-  //   return { success: true };
-  // } catch (error) {
-  //   console.error("Email sending failed:", error);
-  //   return { success: false, error: "Failed to send message. Please try again later." };
-  // }
+  try {
+    const response = await fetch(formEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        message,
+        // Some services might require specific field names or additional fields.
+        // For example, Formspree might use `_replyto: email`
+      }),
+    });
 
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  // For now, we'll return success as if the email was logged.
-  // If you implement actual email sending, adjust success/error based on the email service's response.
-  return { success: true };
+    if (response.ok) {
+      console.log("Form data submitted successfully to external service.");
+      return { success: true };
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Failed to submit form to external service:", response.status, errorData);
+      return { 
+        success: false, 
+        error: `Failed to send message (status: ${response.status}). Please try again.` 
+      };
+    }
+  } catch (error) {
+    console.error("Error submitting form to external service:", error);
+    return { 
+      success: false, 
+      error: "An unexpected error occurred while sending the message. Please try again." 
+    };
+  }
 }
+
