@@ -57,7 +57,7 @@ export function SectionWrapper({
       id={id}
       ref={sectionRef}
       className={cn(
-        'w-full max-w-4xl py-12 md:py-20 px-4 sm:px-6 lg:px-8',
+        'w-full max-w-5xl py-12 md:py-20 px-4 sm:px-6 lg:px-8', // Changed max-w-4xl to max-w-5xl
         'opacity-0', // Start with opacity 0
         isVisible && 'fade-in-load', // Apply animation when visible
         isVisible && animationDelay > 0 && `fade-in-delay-${animationDelay}`,
