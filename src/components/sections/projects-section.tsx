@@ -77,7 +77,7 @@ export function ProjectsSection() {
                   </DialogTrigger>
                   <DialogContent
                     hideCloseButton={true}
-                    className="p-4 sm:p-6 max-w-[90vw] md:max-w-[80vw] lg:max-w-[70vw] max-h-[90vh] bg-background/75 backdrop-blur-md flex flex-col items-center justify-center shadow-xl rounded-lg border-border"
+                    className="p-4 sm:p-6 max-w-[90vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl max-h-[90vh] bg-background/75 backdrop-blur-md flex flex-col items-center justify-center shadow-xl rounded-lg border-border"
                   >
                     <DialogTitle className="sr-only">{`Preview of ${project.title}`}</DialogTitle>
                     <div className="relative flex-grow w-full flex items-center justify-center my-auto overflow-hidden py-2">
