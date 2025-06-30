@@ -1,4 +1,3 @@
-
 import { SectionWrapper } from '@/components/shared/section-wrapper';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -22,7 +21,8 @@ import {
   CloudCog,
   AppWindow,
   ImageUp,
-  LayoutDashboard
+  LayoutDashboard,
+  Atom
 } from 'lucide-react';
 
 const skillsData = [
@@ -41,6 +41,7 @@ const skillsData = [
     category: 'Frameworks, Libraries & CSS Tools',
     categoryIcon: <Layers className="h-5 w-5 mr-2 text-primary" />,
     skills: [
+      { name: 'React', icon: <Atom className="h-4 w-4" /> },
       { name: 'Bootstrap', icon: <LayoutGrid className="h-4 w-4" /> },
       { name: 'FlexBox', icon: <StretchHorizontal className="h-4 w-4" /> },
       { name: 'Tailwind CSS', icon: <Wind className="h-4 w-4" /> },
