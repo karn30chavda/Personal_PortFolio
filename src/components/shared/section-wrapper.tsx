@@ -33,11 +33,12 @@ export function SectionWrapper({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsVisible(true);
-            observer.unobserve(entry.target);
+            // We can optionally unobserve after the animation has triggered
+            // observer.unobserve(entry.target); 
           }
         });
       },
-      { threshold: 0.1 } // Trigger when 10% of the section is visible
+      { threshold: 0.2 } // Trigger when 20% of the section is visible
     );
 
     const currentSectionRef = sectionRef.current;
@@ -58,9 +59,8 @@ export function SectionWrapper({
       ref={sectionRef}
       className={cn(
         'w-full max-w-5xl py-12 md:py-20 px-4 sm:px-6 lg:px-8',
-        'opacity-0', // Start with opacity 0
-        isVisible && 'fade-in-load', // Apply animation when visible
-        isVisible && animationDelay > 0 && `fade-in-delay-${animationDelay}`,
+        'transition-opacity duration-700 ease-out', // Keep a fade-in for the wrapper
+        isVisible ? 'opacity-100 is-visible' : 'opacity-0', // Add 'is-visible' class
         className
       )}
     >
