@@ -6,7 +6,7 @@ export function AboutSection() {
   return (
     <SectionWrapper id="about" title="About Me" animationDelay={1}>
       <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-        <div className="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-xl group">
+        <div className="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-xl group" data-scroll-animate="slide-in-left">
            <Image
             src="https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080"
             alt="About me visual - Minion character"
@@ -15,7 +15,7 @@ export function AboutSection() {
             data-ai-hint="minion character"
           />
         </div>
-        <div className="space-y-4 text-lg text-foreground/80 text-center md:text-left">
+        <div className="space-y-4 text-lg text-foreground/80 text-center md:text-left" data-scroll-animate="slide-in-right">
           <p>
             Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
           </p>
