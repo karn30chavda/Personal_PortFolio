@@ -110,15 +110,19 @@ export async function updateResume(prevState: any, formData: FormData) {
     const buffer = Buffer.from(arrayBuffer);
 
     const results: any = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream({
+        const uploadStream = cloudinary.uploader.upload_stream({
             folder: 'portfolio-resume',
-            resource_type: 'raw',
+            // By not specifying resource_type, Cloudinary will attempt to auto-detect.
+            // Providing the original filename helps with this.
+            public_id: resumeFile.name.split('.').slice(0, -1).join('.'),
+            format: 'pdf',
         }, (error, result) => {
             if (error) {
                 return reject(error);
             }
             resolve(result);
-        }).end(buffer);
+        });
+        uploadStream.end(buffer);
     });
 
     const resumeUrl = results.secure_url;
