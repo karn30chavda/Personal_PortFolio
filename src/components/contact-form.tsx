@@ -1,80 +1,72 @@
 
 "use client"
 
+import { useActionState, useEffect, useRef } from "react"
+import { useFormStatus } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
-import { useState, type FormEvent } from "react"
+import { saveContactMessage } from "@/lib/actions"
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={pending}>
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Sending...
+        </>
+      ) : (
+        "Send Message"
+      )}
+    </Button>
+  );
+}
 
 export function ContactForm() {
-  const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [state, formAction] = useActionState(saveContactMessage, { success: false, message: '', errors: {} });
+  const { toast } = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
 
-  // This is a simplified submission handler for a static Netlify form.
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsSubmitting(true)
-
-    const formData = new FormData(event.currentTarget);
-    
-    // The fetch request submits the form data to Netlify's backend.
-    try {
-      await fetch("/", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(formData as any).toString(),
-      });
-      
-      toast({
-        title: "Message Sent!",
-        description: "Thanks for reaching out. Your message has been submitted.",
-      });
-
-      // Reset the form after successful submission
-      (event.target as HTMLFormElement).reset();
-
-    } catch (error) {
-      console.error("Form submission error:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSubmitting(false)
+  useEffect(() => {
+    if (state.message) {
+      if (state.success) {
+        toast({
+          title: "Message Sent!",
+          description: "Thanks for reaching out. Your message has been submitted.",
+        });
+        formRef.current?.reset();
+      } else {
+        const errorMsg = state.errors ? Object.values(state.errors).flat().join(' ') : '';
+        toast({
+          title: "Error",
+          description: state.message + ' ' + errorMsg,
+          variant: "destructive",
+        });
+      }
     }
-  };
+  }, [state, toast]);
 
   return (
-    // Netlify requires the form to have the `data-netlify="true"` attribute
-    // and a hidden input with the form's name.
     <form
-      name="contact"
-      method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="bot-field"
-      onSubmit={handleSubmit}
+      ref={formRef}
+      action={formAction}
       className="space-y-6 bg-card p-6 md:p-8 rounded-lg shadow-lg border border-border"
     >
-      {/* Hidden input for Netlify to identify the form */}
-      <input type="hidden" name="form-name" value="contact" />
-      <p className="hidden">
-        <label>
-          Don’t fill this out if you’re human: <input name="bot-field" />
-        </label>
-      </p>
-
       <div className="space-y-2">
         <Label htmlFor="name">Full Name</Label>
         <Input id="name" name="name" placeholder="John Doe" required />
+        {state?.errors?.name && <p className="text-sm font-medium text-destructive">{state.errors.name[0]}</p>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="email">Email Address</Label>
         <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+        {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email[0]}</p>}
       </div>
 
       <div className="space-y-2">
@@ -87,18 +79,10 @@ export function ContactForm() {
           required
           minLength={10}
         />
+        {state?.errors?.message && <p className="text-sm font-medium text-destructive">{state.errors.message[0]}</p>}
       </div>
 
-      <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isSubmitting}>
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Sending...
-          </>
-        ) : (
-          "Send Message"
-        )}
-      </Button>
+      <SubmitButton />
     </form>
   )
 }

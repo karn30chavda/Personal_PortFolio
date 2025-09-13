@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award } from 'lucide-react';
+import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award, Mail } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -34,6 +34,7 @@ const navItems = [
   { href: '/dashboard/skills', label: 'Skills Section', icon: <Wrench /> },
   { href: '/dashboard/projects', label: 'Projects Section', icon: <FolderKanban /> },
   { href: '/dashboard/certificates', label: 'Certificates', icon: <Award /> },
+  { href: '/dashboard/messages', label: 'Messages', icon: <Mail /> },
 ];
 
 function MobileNav() {
