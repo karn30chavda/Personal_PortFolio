@@ -43,7 +43,7 @@ function SubmitButton() {
   return (
     <Button type="submit" disabled={pending}>
       {pending ? (
-        <>
+        <>_
           <Loader2 className="animate-spin mr-2" />
           Saving...
         </>
@@ -109,7 +109,7 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
             value={JSON.stringify(form.watch('skillsData'))}
         />
         {fields.map((categoryItem, categoryIndex) => (
-          <div key={categoryItem.id} className="p-6 rounded-lg border bg-card/50 space-y-6">
+          <div key={categoryItem.id} className="p-4 md:p-6 rounded-lg border bg-card/50 space-y-6">
             <div className="flex justify-between items-start gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
                 <FormField
@@ -238,4 +238,3 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
       </div>
     );
   }
-

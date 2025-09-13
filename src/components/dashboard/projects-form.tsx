@@ -131,7 +131,7 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
             value={JSON.stringify(form.watch('projectsData'))}
         />
         {fields.map((projectItem, index) => (
-          <div key={projectItem.id} className="p-6 rounded-lg border bg-card/50 space-y-6 relative">
+          <div key={projectItem.id} className="p-4 md:p-6 rounded-lg border bg-card/50 space-y-6 relative">
             <Button
                 type="button"
                 variant="destructive"
@@ -224,7 +224,7 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
                         </FormItem>
                     )}
                     />
-                    <div className='grid grid-cols-2 gap-4'>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                         <FormField
                             control={form.control}
                             name={`projectsData.${index}.liveUrl`}
