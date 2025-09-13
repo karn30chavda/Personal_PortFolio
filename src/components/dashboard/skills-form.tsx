@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useFieldArray, useForm, Controller } from 'react-hook-form';
@@ -26,6 +27,7 @@ const skillSchema = z.object({
 
 const skillCategorySchema = z.object({
   category: z.string().min(1, 'Category name is required'),
+  categoryIconName: z.string().optional(),
   skills: z.array(skillSchema).min(1, 'At least one skill is required'),
 });
 
@@ -38,7 +40,7 @@ type SkillsFormValues = z.infer<typeof skillsFormSchema>;
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="mt-6">
+    <Button type="submit" disabled={pending}>
       {pending ? (
         <>
           <Loader2 className="animate-spin mr-2" />
@@ -97,7 +99,7 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {fields.map((categoryItem, categoryIndex) => (
           <div key={categoryItem.id} className="p-6 rounded-lg border bg-card/50 space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-start">
               <FormField
                 control={form.control}
                 name={`skillsData.${categoryIndex}.category`}
@@ -116,9 +118,10 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
                 variant="destructive"
                 size="icon"
                 onClick={() => remove(categoryIndex)}
-                className="mt-8"
+                className="mt-8 shrink-0"
               >
                 <Trash className="h-4 w-4" />
+                <span className="sr-only">Remove Category</span>
               </Button>
             </div>
             
@@ -126,15 +129,17 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
           </div>
         ))}
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => append({ category: '', skills: [{ name: '' }] })}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Category
-        </Button>
-        <SubmitButton />
+        <div className="flex justify-between items-center pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => append({ category: '', skills: [{ name: '' }] })}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Category
+          </Button>
+          <SubmitButton />
+        </div>
       </form>
     </Form>
   );
@@ -166,6 +171,7 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
               onClick={() => remove(skillIndex)}
             >
               <Trash className="h-4 w-4 text-destructive" />
+               <span className="sr-only">Remove Skill</span>
             </Button>
           </div>
         ))}
@@ -181,3 +187,4 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
       </div>
     );
   }
+
