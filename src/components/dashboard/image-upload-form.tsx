@@ -16,17 +16,20 @@ import { updateProfilePicture } from '@/lib/actions';
 
 import 'react-image-crop/dist/ReactCrop.css';
 
-function SubmitButton() {
+function CropSubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+    <Button type="submit" disabled={pending}>
       {pending ? (
         <>
           <Loader2 className="animate-spin mr-2" />
           Uploading...
         </>
       ) : (
-        "Upload New Picture"
+        <>
+          <CropIcon className="mr-2 h-4 w-4" />
+          Confirm Crop & Upload
+        </>
       )}
     </Button>
   );
@@ -80,6 +83,7 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
 
   const onSelectFile = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -103,12 +107,14 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
     setCrop(initialCrop);
   };
 
-  const handleCropConfirm = async () => {
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (completedCrop?.width && completedCrop?.height && imgRef.current) {
       const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
-      const formData = new FormData();
-      formData.append('croppedImage', dataUrl);
-      formAction(formData);
+      if (hiddenInputRef.current) {
+        hiddenInputRef.current.value = dataUrl;
+      }
+      formAction(new FormData(event.currentTarget));
       setIsCropModalOpen(false);
       setImgSrc('');
       if (fileInputRef.current) {
@@ -159,39 +165,39 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
 
       <Dialog open={isCropModalOpen} onOpenChange={setIsCropModalOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Crop Your Image</DialogTitle>
-          </DialogHeader>
-          {imgSrc && (
-            <div className='flex justify-center'>
-            <ReactCrop
-              crop={crop}
-              onChange={(_, percentCrop) => setCrop(percentCrop)}
-              onComplete={(c) => setCompletedCrop(c)}
-              aspect={1}
-              circularCrop
-            >
-              <Image
-                ref={imgRef}
-                alt="Crop me"
-                src={imgSrc}
-                width={400}
-                height={400}
-                onLoad={onImageLoad}
-                className="max-h-[70vh] object-contain"
-              />
-            </ReactCrop>
-            </div>
-          )}
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={handleCropConfirm}>
-              <CropIcon className="mr-2 h-4 w-4" />
-              Confirm Crop & Upload
-            </Button>
-          </DialogFooter>
+          <form onSubmit={handleFormSubmit}>
+            <DialogHeader>
+              <DialogTitle>Crop Your Image</DialogTitle>
+            </DialogHeader>
+            {imgSrc && (
+              <div className='flex justify-center'>
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+                aspect={1}
+                circularCrop
+              >
+                <Image
+                  ref={imgRef}
+                  alt="Crop me"
+                  src={imgSrc}
+                  width={400}
+                  height={400}
+                  onLoad={onImageLoad}
+                  className="max-h-[70vh] object-contain"
+                />
+              </ReactCrop>
+              </div>
+            )}
+            <input type="hidden" name="croppedImage" ref={hiddenInputRef} />
+            <DialogFooter className="mt-4">
+              <DialogClose asChild>
+                <Button variant="outline" type="button">Cancel</Button>
+              </DialogClose>
+              <CropSubmitButton />
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
