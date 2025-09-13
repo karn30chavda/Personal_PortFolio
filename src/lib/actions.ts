@@ -71,13 +71,14 @@ export async function updateProfilePicture(prevState: any, formData: FormData) {
   }
 }
 
-export async function getProfileData() {
+export async function getProfileData(): Promise<{ imageUrl: string }> {
   try {
     const docRef = doc(db, "siteConfig", "profile");
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists() && docSnap.data().imageUrl) {
-      return docSnap.data();
+      // Return a plain object, not the complex DocumentData
+      return { imageUrl: docSnap.data().imageUrl };
     } else {
       // Return a default or initial state if no data is found
       return { imageUrl: '/images/karanprofile.jpg' };
