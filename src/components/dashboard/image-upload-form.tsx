@@ -19,7 +19,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 function CropSubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
       {pending ? (
         <>
           <Loader2 className="animate-spin mr-2" />
@@ -109,12 +109,19 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
     if (completedCrop?.width && completedCrop?.height && imgRef.current) {
       const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
-      if (hiddenInputRef.current) {
-        hiddenInputRef.current.value = dataUrl;
-      }
-      formAction(new FormData(event.currentTarget));
+      
+      // Create a new FormData object from the form
+      const formData = new FormData(form);
+      // Set the cropped image data
+      formData.set('croppedImage', dataUrl);
+  
+      // Pass the new FormData object to the server action
+      formAction(formData);
+  
+      // Reset states after submission
       setIsCropModalOpen(false);
       setImgSrc('');
       if (fileInputRef.current) {
@@ -191,7 +198,7 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
               </div>
             )}
             <input type="hidden" name="croppedImage" ref={hiddenInputRef} />
-            <DialogFooter className="sm:mt-4 mt-2">
+            <DialogFooter className="mt-4 space-y-2 sm:space-y-0">
               <DialogClose asChild>
                 <Button variant="outline" type="button" className="w-full sm:w-auto">Cancel</Button>
               </DialogClose>
