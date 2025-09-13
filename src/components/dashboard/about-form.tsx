@@ -13,9 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const AboutDetailsSchema = z.object({
-  paragraph1: z.string().min(1, "First paragraph is required."),
-  paragraph2: z.string().min(1, "Second paragraph is required."),
-  paragraph3: z.string().min(1, "Third paragraph is required."),
+  content: z.string().min(1, "Content is required."),
 });
 
 type AboutDetailsFormValues = z.infer<typeof AboutDetailsSchema>;
@@ -62,21 +60,12 @@ export function AboutForm({ currentData }: { currentData: AboutDetailsFormValues
   return (
     <form action={formAction} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="paragraph1">Paragraph 1</Label>
-        <Textarea id="paragraph1" name="paragraph1" className="min-h-[120px]" defaultValue={currentData.paragraph1} />
-        {state?.errors?.paragraph1 && <p className="text-sm font-medium text-destructive">{state.errors.paragraph1[0]}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="paragraph2">Paragraph 2</Label>
-        <Textarea id="paragraph2" name="paragraph2" className="min-h-[120px]" defaultValue={currentData.paragraph2} />
-        {state?.errors?.paragraph2 && <p className="text-sm font-medium text-destructive">{state.errors.paragraph2[0]}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="paragraph3">Paragraph 3</Label>
-        <Textarea id="paragraph3" name="paragraph3" className="min-h-[120px]" defaultValue={currentData.paragraph3} />
-        {state?.errors?.paragraph3 && <p className="text-sm font-medium text-destructive">{state.errors.paragraph3[0]}</p>}
+        <Label htmlFor="content">About Content</Label>
+        <Textarea id="content" name="content" className="min-h-[240px]" defaultValue={currentData.content} />
+        <p className="text-sm text-muted-foreground">
+          Use a double line break (press Enter twice) to separate paragraphs.
+        </p>
+        {state?.errors?.content && <p className="text-sm font-medium text-destructive">{state.errors.content[0]}</p>}
       </div>
       
       <SubmitButton />

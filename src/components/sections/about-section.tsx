@@ -8,9 +8,7 @@ import { getProfileData } from '@/lib/actions';
 import { useEffect, useState } from 'react';
 
 type AboutData = {
-  paragraph1: string;
-  paragraph2: string;
-  paragraph3: string;
+  content: string;
   imageUrl: string;
 }
 
@@ -24,6 +22,8 @@ export function AboutSection() {
     }
     fetchData();
   }, []);
+
+  const paragraphs = aboutData?.content.split('\n\n').filter(p => p.trim() !== '') || [];
 
   if (!aboutData) {
     return (
@@ -66,9 +66,9 @@ export function AboutSection() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
         >
-          <p>{aboutData.paragraph1}</p>
-          <p>{aboutData.paragraph2}</p>
-          <p>{aboutData.paragraph3}</p>
+          {paragraphs.map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
         </motion.div>
       </div>
     </SectionWrapper>

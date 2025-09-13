@@ -99,17 +99,13 @@ export async function updateProfileDetails(prevState: any, formData: FormData) {
 }
 
 const AboutDetailsSchema = z.object({
-  paragraph1: z.string().min(1, "First paragraph is required."),
-  paragraph2: z.string().min(1, "Second paragraph is required."),
-  paragraph3: z.string().min(1, "Third paragraph is required."),
+  content: z.string().min(1, "Content is required."),
 });
 
 export async function updateAboutDetails(prevState: any, formData: FormData) {
   try {
     const validatedFields = AboutDetailsSchema.safeParse({
-      paragraph1: formData.get('paragraph1'),
-      paragraph2: formData.get('paragraph2'),
-      paragraph3: formData.get('paragraph3'),
+      content: formData.get('content'),
     });
 
     if (!validatedFields.success) {
@@ -169,9 +165,7 @@ export async function getProfileData(): Promise<{
   bio: string; 
   resumeUrl: string;
   about: {
-    paragraph1: string;
-    paragraph2: string;
-    paragraph3: string;
+    content: string;
     imageUrl: string;
   }
 }> {
@@ -192,6 +186,13 @@ export async function getProfileData(): Promise<{
 
     const profileData = profileDocSnap.data() || {};
     const aboutData = aboutDocSnap.data() || {};
+    
+    const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
+
+My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
+
+When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.`;
+
 
     return { 
       imageUrl: profileData.imageUrl || '/images/karanprofile.jpg',
@@ -200,15 +201,18 @@ export async function getProfileData(): Promise<{
       bio: profileData.bio || 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
       resumeUrl: '/karanresume.pdf',
       about: {
-        paragraph1: aboutData.paragraph1 || "Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.",
-        paragraph2: aboutData.paragraph2 || "My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.",
-        paragraph3: aboutData.paragraph3 || "When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.",
+        content: aboutData.content || defaultAboutContent,
         imageUrl: aboutData.imageUrl || "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       }
     };
     
   } catch (error) {
     console.error("Error fetching site data:", error);
+    const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
+
+My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
+
+When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.`;
     // Return default in case of error to prevent site crash
     return { 
       imageUrl: '/images/karanprofile.jpg',
@@ -217,10 +221,8 @@ export async function getProfileData(): Promise<{
       bio: 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
       resumeUrl: '/karanresume.pdf',
       about: {
-        paragraph1: "Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.",
-        paragraph2: "My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.",
-        paragraph3: "When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.",
-        imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib-4.1.0&q=80&w=1080",
+        content: defaultAboutContent,
+        imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       }
     };
   }
