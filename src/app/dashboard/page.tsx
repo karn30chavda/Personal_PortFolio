@@ -9,25 +9,43 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight">Edit Profile & Hero Section</h1>
-      
-      <Card>
-        <CardHeader>
-            <CardTitle>Profile Picture</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <ImageUploadForm currentImageUrl={profileData.imageUrl} />
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-            <CardTitle>Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <ProfileDetailsForm currentData={profileData} />
-        </CardContent>
-      </Card>
+      <div className="text-left">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Edit Profile & Hero Section
+        </h1>
+        <p className="mt-1 text-muted-foreground text-sm">
+          Update your profile picture and personal details to keep your portfolio fresh.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                Profile Picture
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ImageUploadForm currentImageUrl={profileData.imageUrl} />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-2">
+           <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProfileDetailsForm currentData={profileData} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
