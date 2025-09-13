@@ -33,7 +33,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
-        <Sidebar collapsible="icon">
+        <Sidebar>
           <SidebarHeader className="p-4">
             <Link href="/" className="text-xl font-bold text-primary font-headline group-data-[collapsible=icon]:hidden">
               Karan Chavda

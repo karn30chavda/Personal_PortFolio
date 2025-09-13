@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
   TooltipContent,
@@ -90,9 +89,12 @@ const SidebarProvider = React.forwardRef<
           _setOpen(openState)
         }
 
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        // On desktop, save state to cookie
+        if (!isMobile) {
+          document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        }
       },
-      [setOpenProp, open]
+      [setOpenProp, open, isMobile]
     )
     
     const toggleSidebar = React.useCallback(() => {
@@ -119,7 +121,7 @@ const SidebarProvider = React.forwardRef<
     const contextValue = React.useMemo<SidebarContext>(
       () => ({
         state,
-        open,
+        open: isMobile ? open : true, // Sheet open state for mobile
         setOpen,
         isMobile,
         toggleSidebar,
@@ -140,7 +142,7 @@ const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full",
+              "group/sidebar-wrapper",
               className
             )}
             ref={ref}
@@ -175,9 +177,9 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { state } = useSidebar();
+    const { state, open, setOpen, isMobile } = useSidebar();
 
-    return (
+    const desktopSidebar = (
         <div
             ref={ref}
             data-state={state}
@@ -188,7 +190,7 @@ const Sidebar = React.forwardRef<
                 "group text-sidebar-foreground transition-all duration-300 ease-in-out",
                 "data-[state=expanded]:w-[var(--sidebar-width)]",
                 "data-[collapsible=icon]:data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
-                "hidden md:flex flex-col bg-sidebar border-r border-sidebar-border",
+                "hidden md:flex flex-col bg-sidebar-background border-r border-sidebar-border",
                 className
             )}
             {...props}
@@ -196,6 +198,26 @@ const Sidebar = React.forwardRef<
             {children}
         </div>
     );
+
+    const mobileSidebar = (
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetContent 
+                side={side} 
+                className={cn(
+                    "w-[var(--sidebar-width-mobile)] flex flex-col p-0",
+                    "bg-sidebar-background text-sidebar-foreground border-sidebar-border",
+                    className
+                )}
+            >
+                 <SheetHeader className="sr-only">
+                    <SheetTitle>Sidebar Menu</SheetTitle>
+                </SheetHeader>
+                {children}
+            </SheetContent>
+        </Sheet>
+    )
+
+    return isMobile ? mobileSidebar : desktopSidebar;
   }
 )
 Sidebar.displayName = "Sidebar"
@@ -226,23 +248,6 @@ const SidebarTrigger = React.forwardRef<
   )
 })
 SidebarTrigger.displayName = "SidebarTrigger"
-
-const SidebarInset = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"main">
->(({ className, ...props }, ref) => {
-  return (
-    <main
-      ref={ref}
-      className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background",
-        className
-      )}
-      {...props}
-    />
-  )
-})
-SidebarInset.displayName = "SidebarInset"
 
 const SidebarInput = React.forwardRef<
   React.ElementRef<typeof Input>,
@@ -440,7 +445,6 @@ export {
   SidebarFooter,
   SidebarHeader,
   SidebarInput,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
