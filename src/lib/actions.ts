@@ -35,25 +35,16 @@ export async function logout() {
 
 export async function updateProfilePicture(prevState: any, formData: FormData) {
   try {
-    const image = formData.get('image') as File;
-    if (!image || image.size === 0) {
-      return { success: false, message: 'Please select an image to upload.' };
+    const croppedImage = formData.get('croppedImage') as string;
+    if (!croppedImage) {
+      return { success: false, message: 'No cropped image data found.' };
     }
 
-    const arrayBuffer = await image.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const results = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream({ folder: 'portfolio-profile' }, (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve(result);
-      }).end(buffer);
+    const results = await cloudinary.uploader.upload(croppedImage, {
+      folder: 'portfolio-profile',
     });
 
-    const imageUrl = (results as any).secure_url;
+    const imageUrl = results.secure_url;
     
     await setDoc(doc(db, "siteConfig", "profile"), {
       imageUrl: imageUrl,
