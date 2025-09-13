@@ -191,9 +191,9 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
               </div>
             )}
             <input type="hidden" name="croppedImage" ref={hiddenInputRef} />
-            <DialogFooter className="mt-4">
+            <DialogFooter className="sm:mt-4 mt-2">
               <DialogClose asChild>
-                <Button variant="outline" type="button">Cancel</Button>
+                <Button variant="outline" type="button" className="w-full sm:w-auto">Cancel</Button>
               </DialogClose>
               <CropSubmitButton />
             </DialogFooter>
