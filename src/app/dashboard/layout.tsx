@@ -74,7 +74,7 @@ export default function DashboardLayout({
           </SidebarFooter>
         </Sidebar>
         <div className="flex-1 flex flex-col">
-          <header className="sticky top-0 z-10 flex h-16 items-center border-b bg-background/80 px-4 backdrop-blur-sm">
+          <header className="sticky top-0 z-10 flex h-16 items-center border-b bg-background px-4">
             <SidebarTrigger />
             {/* You can add user menu or other header items here for desktop */}
           </header>
