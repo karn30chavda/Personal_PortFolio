@@ -158,62 +158,163 @@ export async function updateAboutImage(prevState: any, formData: FormData) {
     }
   }
 
-export async function getProfileData(): Promise<{ 
-  imageUrl: string; 
-  name: string; 
-  title: string; 
-  bio: string; 
-  resumeUrl: string;
-  about: {
-    content: string;
-    imageUrl: string;
-  }
-}> {
-  try {
-    const profileDocRef = doc(db, "siteConfig", "profile");
-    const aboutDocRef = doc(db, "siteConfig", "about");
+const skillSchema = z.object({
+  name: z.string().min(1),
+});
 
-    // Create documents if they don't exist
-    await Promise.all([
-        setDoc(profileDocRef, {}, { merge: true }),
-        setDoc(aboutDocRef, {}, { merge: true }),
-    ]);
+const skillCategorySchema = z.object({
+  category: z.string().min(1),
+  categoryIconName: z.string().optional(),
+  skills: z.array(skillSchema).min(1),
+});
 
-    const [profileDocSnap, aboutDocSnap] = await Promise.all([
-      getDoc(profileDocRef),
-      getDoc(aboutDocRef)
-    ]);
+const skillsFormSchema = z.array(skillCategorySchema);
 
-    const profileData = profileDocSnap.data() || {};
-    const aboutData = aboutDocSnap.data() || {};
-    
-    const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
-
-My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
-
-When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.`;
-
-
-    return { 
-      imageUrl: profileData.imageUrl || '/images/karanprofile.jpg',
-      name: profileData.name || 'Karan Chavda',
-      title: profileData.title || 'Creative Web Developer & UI/UX Enthusiast',
-      bio: profileData.bio || 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
-      resumeUrl: '/karanresume.pdf',
-      about: {
-        content: aboutData.content || defaultAboutContent,
-        imageUrl: aboutData.imageUrl || "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+export async function updateSkillsData(prevState: any, formData: FormData) {
+    try {
+      const skillsDataString = formData.get('skillsData') as string;
+      if (!skillsDataString) {
+        return { success: false, message: 'No skills data provided.' };
       }
+  
+      const skillsDataJSON = JSON.parse(skillsDataString);
+      const validatedFields = skillsFormSchema.safeParse(skillsDataJSON);
+  
+      if (!validatedFields.success) {
+        console.log(validatedFields.error.flatten());
+        return {
+          success: false,
+          message: "Validation failed. Ensure all fields are filled.",
+        };
+      }
+      
+      await setDoc(doc(db, "siteConfig", "skills"), { skillsData: validatedFields.data });
+  
+      revalidatePath("/");
+      revalidatePath("/dashboard/skills");
+  
+      return { success: true, message: "Skills section updated successfully!" };
+    } catch (error) {
+      console.error("Error updating skills data:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      return { success: false, message: `Failed to update skills: ${errorMessage}` };
+    }
+  }
+
+  type SiteData = {
+    imageUrl: string;
+    name: string;
+    title: string;
+    bio: string;
+    resumeUrl: string;
+    about: {
+      content: string;
+      imageUrl: string;
     };
-    
-  } catch (error) {
-    console.error("Error fetching site data:", error);
+    skills: z.infer<typeof skillsFormSchema>;
+  };
+  
+  export async function getSiteData(): Promise<SiteData> {
+    try {
+      const profileDocRef = doc(db, "siteConfig", "profile");
+      const aboutDocRef = doc(db, "siteConfig", "about");
+      const skillsDocRef = doc(db, "siteConfig", "skills");
+  
+      // Ensure documents exist
+      await Promise.all([
+          setDoc(profileDocRef, {}, { merge: true }),
+          setDoc(aboutDocRef, {}, { merge: true }),
+          setDoc(skillsDocRef, {}, { merge: true }),
+      ]);
+  
+      const [profileDocSnap, aboutDocSnap, skillsDocSnap] = await Promise.all([
+        getDoc(profileDocRef),
+        getDoc(aboutDocRef),
+        getDoc(skillsDocRef)
+      ]);
+  
+      const profileData = profileDocSnap.data() || {};
+      const aboutData = aboutDocSnap.data() || {};
+      const skillsData = skillsDocSnap.data()?.skillsData || defaultSkills;
+      
+      const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
+
+My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
+
+When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.`;
+  
+      return { 
+        imageUrl: profileData.imageUrl || '/images/karanprofile.jpg',
+        name: profileData.name || 'Karan Chavda',
+        title: profileData.title || 'Creative Web Developer & UI/UX Enthusiast',
+        bio: profileData.bio || 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
+        resumeUrl: '/karanresume.pdf',
+        about: {
+          content: aboutData.content || defaultAboutContent,
+          imageUrl: aboutData.imageUrl || "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        },
+        skills: skillsData,
+      };
+      
+    } catch (error) {
+      console.error("Error fetching site data:", error);
+      return getDefaultSiteData();
+    }
+  }
+
+  const defaultSkills = [
+    {
+      category: 'Core Languages & Markup',
+      categoryIconName: 'Code2',
+      skills: [
+        { name: 'C/C++' },
+        { name: 'HTML' },
+        { name: 'CSS' },
+        { name: 'JavaScript' },
+        { name: 'SQL' },
+      ]
+    },
+    {
+      category: 'Frameworks, Libraries & CSS Tools',
+      categoryIconName: 'Layers',
+      skills: [
+        { name: 'React' },
+        { name: 'Bootstrap' },
+        { name: 'FlexBox' },
+        { name: 'Tailwind CSS' },
+        { name: 'Shadcn/UI' },
+      ]
+    },
+    {
+      category: 'Development Tools & Platforms',
+      categoryIconName: 'TerminalSquare',
+      skills: [
+        { name: 'Git' },
+        { name: 'GitHub' },
+        { name: 'Visual Studio Code' },
+        { name: 'Netlify' },
+        { name: 'Firebase Studio' },
+      ]
+    },
+    {
+      category: 'Backend, BaaS & PWA',
+      categoryIconName: 'DatabaseZap',
+      skills: [
+        { name: 'Google Firebase' },
+        { name: 'Supabase' },
+        { name: 'PWA' },
+        { name: 'Cloudinary' },
+      ]
+    },
+  ];
+
+  function getDefaultSiteData(): SiteData {
     const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
 
 My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
 
 When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.`;
-    // Return default in case of error to prevent site crash
+    
     return { 
       imageUrl: '/images/karanprofile.jpg',
       name: 'Karan Chavda',
@@ -223,7 +324,20 @@ When I'm not coding, you can find me exploring new technologies, contributing to
       about: {
         content: defaultAboutContent,
         imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      }
+      },
+      skills: defaultSkills
     };
   }
+
+  // Legacy function, kept for compatibility, but new code should use getSiteData
+export async function getProfileData() {
+    const data = await getSiteData();
+    return {
+        imageUrl: data.imageUrl,
+        name: data.name,
+        title: data.title,
+        bio: data.bio,
+        resumeUrl: data.resumeUrl,
+        about: data.about
+    }
 }

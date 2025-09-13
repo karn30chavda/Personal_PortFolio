@@ -1,9 +1,8 @@
-
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Info, LogOut, ExternalLink, Menu } from 'lucide-react';
+import { User, Info, LogOut, ExternalLink, Menu, Wrench } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -31,6 +30,7 @@ import { useEffect, useState } from 'react';
 const navItems = [
   { href: '/dashboard', label: 'Profile', icon: <User /> },
   { href: '/dashboard/about', label: 'About Section', icon: <Info /> },
+  { href: '/dashboard/skills', label: 'Skills Section', icon: <Wrench /> },
 ];
 
 function MobileNav() {
