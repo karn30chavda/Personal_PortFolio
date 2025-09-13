@@ -113,6 +113,7 @@ export async function updateResume(prevState: any, formData: FormData) {
         const uploadStream = cloudinary.uploader.upload_stream({
             folder: 'portfolio-resume',
             resource_type: 'raw',
+            // Use the original filename for the public_id, this helps Cloudinary set the correct Content-Type
             public_id: resumeFile.name.split('.').slice(0, -1).join('.'),
         }, (error, result) => {
             if (error) {
