@@ -28,7 +28,7 @@ const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {
   state: "expanded" | "collapsed"
-  isMobile: boolean
+  isMobile: boolean | null
   toggleSidebar: () => void
   isSheetOpen: boolean;
   setSheetOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -63,10 +63,11 @@ const SidebarProvider = React.forwardRef<
     const [isSheetOpen, setSheetOpen] = React.useState(false);
 
     React.useEffect(() => {
+        if (isMobile === null) return;
         const cookieValue = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
         const initialOpen = cookieValue ? cookieValue.split('=')[1] === 'true' : true;
         setOpen(initialOpen);
-    }, []);
+    }, [isMobile]);
 
     const toggleSidebar = React.useCallback(() => {
         setOpen((prev) => {
@@ -77,6 +78,7 @@ const SidebarProvider = React.forwardRef<
     }, [])
 
     React.useEffect(() => {
+      if (isMobile === null) return;
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
           event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -156,7 +158,7 @@ const Sidebar = React.forwardRef<
   ) => {
     const { state, isMobile, isSheetOpen, setSheetOpen } = useSidebar();
     
-    const sidebarContent = (
+    return (
       <div
             ref={ref}
             data-state={state}
@@ -166,7 +168,7 @@ const Sidebar = React.forwardRef<
             className={cn(
                 "group text-sidebar-foreground transition-all duration-300 ease-in-out",
                 "flex flex-col bg-sidebar-background border-r border-sidebar-border",
-                isMobile ? "w-[var(--sidebar-width-mobile)] p-0" : "data-[state=expanded]:w-[var(--sidebar-width)] data-[collapsible=icon]:data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
+                "data-[state=expanded]:w-[var(--sidebar-width)] data-[collapsible=icon]:data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
                 className
             )}
             {...props}
@@ -174,23 +176,6 @@ const Sidebar = React.forwardRef<
             {children}
       </div>
     );
-
-    if (isMobile) {
-        return (
-            <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
-                <SheetContent side="left" className="w-[var(--sidebar-width-mobile)] flex flex-col p-0 bg-sidebar-background text-sidebar-foreground border-sidebar-border">
-                    <SheetHeader className="p-4 border-b border-sidebar-border">
-                        <SheetTitle className="text-xl font-bold text-primary font-headline">
-                            Sidebar Menu
-                        </SheetTitle>
-                    </SheetHeader>
-                    {children}
-                </SheetContent>
-            </Sheet>
-        )
-    }
-
-    return sidebarContent;
   }
 )
 Sidebar.displayName = "Sidebar"
@@ -399,7 +384,7 @@ const SidebarMenuButton = React.forwardRef<
         <TooltipContent
           side="right"
           align="center"
-          hidden={state !== "collapsed" || isMobile}
+          hidden={state !== "collapsed" || isMobile === true}
           {...tooltipContent}
         />
       </Tooltip>
