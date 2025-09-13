@@ -232,3 +232,4 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
       </div>
     );
   }
+
