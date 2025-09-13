@@ -91,6 +91,7 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
 
   const handleFormAction = (formData: FormData) => {
     const data = form.getValues();
+    // This hidden input is not strictly necessary with this setup but is a good pattern
     formData.append('skillsData', JSON.stringify(data.skillsData));
     formAction(formData);
   };
@@ -102,6 +103,11 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
         action={handleFormAction}
         className="space-y-8"
       >
+        <input
+            type="hidden"
+            {...form.register('skillsData')}
+            value={JSON.stringify(form.watch('skillsData'))}
+        />
         {fields.map((categoryItem, categoryIndex) => (
           <div key={categoryItem.id} className="p-6 rounded-lg border bg-card/50 space-y-6">
             <div className="flex justify-between items-start gap-4">
@@ -126,7 +132,7 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
                     <FormItem>
                       <FormLabel>Category Icon Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Code2" {...field} />
+                        <Input placeholder="e.g., Code2" {...field} value={field.value ?? ''} />
                       </FormControl>
                       <FormDescription className="text-xs">
                         Find icon names on lucide.dev. Examples: Layers, DatabaseZap, Wrench.
@@ -201,7 +207,7 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
                   <FormItem className="flex-grow">
                      <FormLabel className="text-xs">Icon Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Braces" {...field} className="flex-grow"/>
+                      <Input placeholder="e.g., Braces" {...field} className="flex-grow" value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage/>
                   </FormItem>
