@@ -18,7 +18,7 @@ export default async function DashboardAboutPage() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-1">
-          <div className="bg-white/70 dark:bg-gray-900/50 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-6">
+          <div className="p-0 md:p-6 md:bg-white/70 md:dark:bg-gray-900/50 md:backdrop-blur-md md:rounded-2xl md:border md:border-gray-200 md:dark:border-gray-800 md:shadow-sm md:hover:shadow-md md:transition-shadow">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
               About Image
             </h2>
@@ -26,7 +26,7 @@ export default async function DashboardAboutPage() {
           </div>
         </div>
         <div className="lg:col-span-2">
-          <div className="bg-white/70 dark:bg-gray-900/50 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-6">
+          <div className="p-0 md:p-6 md:bg-white/70 md:dark:bg-gray-900/50 md:backdrop-blur-md md:rounded-2xl md:border md:border-gray-200 md:dark:border-gray-800 md:shadow-sm md:hover:shadow-md md:transition-shadow">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
               About Text
             </h2>

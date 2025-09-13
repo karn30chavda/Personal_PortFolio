@@ -1,3 +1,4 @@
+
 import { getSiteData } from '@/lib/actions';
 import { SkillsForm } from '@/components/dashboard/skills-form';
 
@@ -15,7 +16,7 @@ export default async function DashboardSkillsPage() {
         </p>
       </div>
 
-      <div className="bg-white/70 dark:bg-gray-900/50 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow p-4 md:p-6">
+      <div className="p-0 md:p-6 md:bg-white/70 md:dark:bg-gray-900/50 md:backdrop-blur-md md:rounded-2xl md:border md:border-gray-200 md:dark:border-gray-800 md:shadow-sm md:hover:shadow-md md:transition-shadow">
         <SkillsForm currentSkills={siteData.skills} />
       </div>
     </div>
