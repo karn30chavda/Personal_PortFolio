@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Loader2, CheckCircle, AlertTriangle, CropIcon } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle, CropIcon, Upload } from 'lucide-react';
 import { updateProfilePicture } from '@/lib/actions';
 
 import 'react-image-crop/dist/ReactCrop.css';
@@ -28,7 +28,7 @@ function CropSubmitButton() {
       ) : (
         <>
           <CropIcon className="mr-2 h-4 w-4" />
-          Confirm Crop & Upload
+          Confirm & Upload
         </>
       )}
     </Button>
@@ -125,15 +125,7 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
 
   return (
     <div className="space-y-6">
-      {state?.message && (
-        <Alert variant={state.success ? 'default' : 'destructive'}>
-          {state.success ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-          <AlertTitle>{state.success ? 'Success' : 'Error'}</AlertTitle>
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="flex flex-col sm:flex-row items-center gap-6">
+      <div className="flex flex-col items-center gap-4">
         <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-border shadow-md shrink-0">
           <Image
             src={currentImageUrl}
@@ -142,26 +134,34 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
             className="object-cover"
           />
         </div>
-        <div className="flex-grow w-full">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="image-upload" className="text-base">Choose a new profile image</Label>
-              <Input
-                id="image-upload"
-                name="image"
-                type="file"
-                accept="image/*"
-                onChange={onSelectFile}
-                ref={fileInputRef}
-                className="file:text-primary file:font-semibold"
-              />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              After selecting a file, you'll be able to crop it.
+        <div className="w-full">
+            <Label htmlFor="image-upload-button" className="sr-only">Choose a new profile image</Label>
+            <Button onClick={() => fileInputRef.current?.click()} className='w-full'>
+              <Upload className="mr-2 h-4 w-4" />
+              Change Image
+            </Button>
+            <Input
+              id="image-upload"
+              name="image"
+              type="file"
+              accept="image/*"
+              onChange={onSelectFile}
+              ref={fileInputRef}
+              className="hidden"
+            />
+            <p className="text-sm text-muted-foreground mt-2 text-center">
+              You'll be able to crop it after selecting.
             </p>
-          </div>
         </div>
       </div>
+
+      {state?.message && (
+        <Alert variant={state.success ? 'default' : 'destructive'} className='mt-4'>
+          {state.success ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+          <AlertTitle>{state.success ? 'Success' : 'Error'}</AlertTitle>
+          <AlertDescription>{state.message}</AlertDescription>
+        </Alert>
+      )}
 
       <Dialog open={isCropModalOpen} onOpenChange={setIsCropModalOpen}>
         <DialogContent className="max-w-md">
@@ -170,7 +170,7 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
               <DialogTitle>Crop Your Image</DialogTitle>
             </DialogHeader>
             {imgSrc && (
-              <div className='flex justify-center'>
+              <div className='flex justify-center my-4'>
               <ReactCrop
                 crop={crop}
                 onChange={(_, percentCrop) => setCrop(percentCrop)}

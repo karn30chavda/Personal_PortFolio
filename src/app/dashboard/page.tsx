@@ -9,19 +9,20 @@ export default async function DashboardPage() {
 
   return (
     <SectionWrapper id="dashboard" title="Admin Dashboard">
-      <div className="grid gap-8">
-        <div className="bg-card text-card-foreground p-8 rounded-lg shadow-md border">
-          <p>Welcome to the dashboard. This is a protected area.</p>
-        </div>
-
-        <div className="bg-card text-card-foreground p-8 rounded-lg shadow-md border">
-          <h2 className="text-2xl font-semibold mb-4">Update Profile Details</h2>
-          <ProfileDetailsForm currentData={profileData} />
-        </div>
-
-        <div className="bg-card text-card-foreground p-8 rounded-lg shadow-md border">
-          <h2 className="text-2xl font-semibold mb-4">Update Profile Picture</h2>
-          <ImageUploadForm currentImageUrl={profileData.imageUrl} />
+      <div className="bg-card text-card-foreground p-6 sm:p-8 rounded-lg shadow-xl border">
+        <h2 className="text-2xl font-bold mb-6 text-foreground">Edit Your Profile</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left column for image upload */}
+          <div className="lg:col-span-1">
+            <h3 className="text-xl font-semibold mb-4">Profile Picture</h3>
+            <ImageUploadForm currentImageUrl={profileData.imageUrl} />
+          </div>
+          
+          {/* Right column for profile details */}
+          <div className="lg:col-span-2">
+            <h3 className="text-xl font-semibold mb-4">Profile Details</h3>
+            <ProfileDetailsForm currentData={profileData} />
+          </div>
         </div>
       </div>
     </SectionWrapper>
