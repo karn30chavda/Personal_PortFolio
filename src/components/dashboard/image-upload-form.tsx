@@ -16,7 +16,7 @@ import { updateProfilePicture } from '@/lib/actions';
 
 import 'react-image-crop/dist/ReactCrop.css';
 
-function CropSubmitButton() {
+function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full sm:w-auto">
@@ -83,6 +83,7 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const croppedImageRef = useRef<HTMLInputElement>(null);
 
   const onSelectFile = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -106,18 +107,18 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
     setCrop(initialCrop);
   };
   
-  // This function will be called when the form is submitted
-  const handleFormAction = async (formData: FormData) => {
-    if (completedCrop?.width && completedCrop?.height && imgRef.current) {
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (completedCrop?.width && completedCrop?.height && imgRef.current && croppedImageRef.current) {
         const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
-        formData.set('croppedImage', dataUrl);
+        croppedImageRef.current.value = dataUrl;
     }
     
-    // Call the server action
+    // Now submit the form programmatically
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     formAction(formData);
 
-    // This part runs after the action is initiated
-    // Note: State updates might not be immediate if the action causes a re-render
     if (fileInputRef.current) {
         fileInputRef.current.value = '';
     }
@@ -168,7 +169,18 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
 
       <Dialog open={isCropModalOpen} onOpenChange={setIsCropModalOpen}>
         <DialogContent className="max-w-md">
-          <form action={handleFormAction}>
+          <form action={formAction} onSubmit={async (e) => {
+              e.preventDefault();
+              if (completedCrop?.width && completedCrop?.height && imgRef.current && croppedImageRef.current) {
+                  const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
+                  croppedImageRef.current.value = dataUrl;
+              }
+              const formData = new FormData(e.currentTarget);
+              formAction(formData);
+              setIsCropModalOpen(false);
+              setImgSrc('');
+              if (fileInputRef.current) fileInputRef.current.value = '';
+          }}>
             <DialogHeader>
               <DialogTitle>Crop Your Image</DialogTitle>
             </DialogHeader>
@@ -193,13 +205,13 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
               </ReactCrop>
               </div>
             )}
-            <input type="hidden" name="croppedImage" />
-            <DialogFooter className="mt-4 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+            <input type="hidden" name="croppedImage" ref={croppedImageRef} />
+            <DialogFooter className="mt-4 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 sm:space-y-0">
               <DialogClose asChild>
                 <Button variant="outline" type="button" className="w-full sm:w-auto">Cancel</Button>
               </DialogClose>
               <div className="w-full sm:w-auto mb-2 sm:mb-0">
-                <CropSubmitButton />
+                <SubmitButton />
               </div>
             </DialogFooter>
           </form>
