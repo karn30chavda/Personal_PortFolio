@@ -2,88 +2,20 @@
 "use client";
 
 import { useActionState, useState, useRef, type ChangeEvent, useTransition, useEffect } from 'react';
-import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
-import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Loader2, CropIcon, Upload } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { updateProfilePicture } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 
-import 'react-image-crop/dist/ReactCrop.css';
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
-      {pending ? (
-        <>
-          <Loader2 className="animate-spin mr-2" />
-          Uploading...
-        </>
-      ) : (
-        <>
-          <CropIcon className="mr-2 h-4 w-4" />
-          Confirm & Upload
-        </>
-      )}
-    </Button>
-  );
-}
-
-// Helper to get the cropped image data
-async function getCroppedImg(
-  image: HTMLImageElement,
-  crop: Crop,
-) {
-  const canvas = document.createElement('canvas');
-  const scaleX = image.naturalWidth / image.width;
-  const scaleY = image.naturalHeight / image.height;
-  canvas.width = crop.width;
-  canvas.height = crop.height;
-  const ctx = canvas.getContext('2d');
-
-  if (!ctx) {
-    throw new Error('No 2d context');
-  }
-
-  const pixelRatio = window.devicePixelRatio;
-  canvas.width = crop.width * pixelRatio;
-  canvas.height = crop.height * pixelRatio;
-  ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-  ctx.imageSmoothingQuality = 'high';
-
-  ctx.drawImage(
-    image,
-    crop.x * scaleX,
-    crop.y * scaleY,
-    crop.width * scaleX,
-    crop.height * scaleY,
-    0,
-    0,
-    crop.width,
-    crop.height
-  );
-
-  return new Promise<string>((resolve) => {
-    resolve(canvas.toDataURL('image/jpeg'));
-  });
-}
-
-
 export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }) {
   const [state, formAction] = useActionState(updateProfilePicture, { success: false, message: '' });
-  const [imgSrc, setImgSrc] = useState('');
-  const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<Crop>();
-  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -93,6 +25,10 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
           title: "Success",
           description: state.message,
         });
+        setPreviewUrl(null); 
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       } else {
         toast({
           title: "Error",
@@ -105,61 +41,52 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
 
   const onSelectFile = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setCrop(undefined); // Makes crop preview update between images.
+      const file = e.target.files[0];
       const reader = new FileReader();
-      reader.addEventListener('load', () =>
-        setImgSrc(reader.result?.toString() || ''),
-      );
-      reader.readAsDataURL(e.target.files[0]);
-      setIsCropModalOpen(true);
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    const initialCrop = centerCrop(
-      makeAspectCrop({ unit: '%', width: 90 }, 1, width, height),
-      width,
-      height
-    );
-    setCrop(initialCrop);
-  };
-  
-  const handleFormAction = async (formData: FormData) => {
-    if (completedCrop?.width && completedCrop?.height && imgRef.current) {
-        const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
-        formData.set('croppedImage', dataUrl);
+  const handleFormAction = (formData: FormData) => {
+    // The action now handles the file directly
+    if (!previewUrl) {
+      toast({
+        title: "No Image Selected",
+        description: "Please select an image to upload.",
+        variant: "destructive",
+      });
+      return;
     }
     
     startTransition(() => {
-        formAction(formData);
+        // We pass the original file to the action
+        const file = fileInputRef.current?.files?.[0];
+        if (file) {
+            const newFormData = new FormData();
+            newFormData.append('image', file);
+            formAction(newFormData);
+        }
     });
-
-    setIsCropModalOpen(false);
-    setImgSrc('');
-    if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-    }
   };
 
+  const displayImageUrl = previewUrl || currentImageUrl;
 
   return (
-    <div className="space-y-6">
+    <form action={handleFormAction} className="space-y-6">
       <div className="flex flex-col items-center gap-4">
         <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-border shadow-md shrink-0">
           <Image
-            src={currentImageUrl}
-            alt="Current profile picture"
+            src={displayImageUrl}
+            alt="Profile picture preview"
             fill
             className="object-cover"
           />
         </div>
         <div className="w-full">
-            <Label htmlFor="image-upload-button" className="sr-only">Choose a new profile image</Label>
-            <Button onClick={() => fileInputRef.current?.click()} className='w-full'>
-              <Upload className="mr-2 h-4 w-4" />
-              Change Image
-            </Button>
+            <Label htmlFor="image-upload" className="sr-only">Choose a new profile image</Label>
             <Input
               id="image-upload"
               name="image"
@@ -167,50 +94,23 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
               accept="image/*"
               onChange={onSelectFile}
               ref={fileInputRef}
-              className="hidden"
+              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
             />
-            <p className="text-sm text-muted-foreground mt-2 text-center">
-              You'll be able to crop it after selecting.
-            </p>
         </div>
       </div>
-
-      <Dialog open={isCropModalOpen} onOpenChange={setIsCropModalOpen}>
-        <DialogContent className="max-w-md">
-          <form action={handleFormAction}>
-            <DialogHeader>
-              <DialogTitle>Crop Your Image</DialogTitle>
-            </DialogHeader>
-            {imgSrc && (
-              <div className='flex justify-center my-4'>
-              <ReactCrop
-                crop={crop}
-                onChange={(_, percentCrop) => setCrop(percentCrop)}
-                onComplete={(c) => setCompletedCrop(c)}
-                aspect={1}
-                circularCrop
-              >
-                <Image
-                  ref={imgRef}
-                  alt="Crop me"
-                  src={imgSrc}
-                  width={400}
-                  height={400}
-                  onLoad={onImageLoad}
-                  className="max-h-[70vh] object-contain"
-                />
-              </ReactCrop>
-              </div>
-            )}
-            <DialogFooter className="mt-4 flex-col-reverse space-y-2 space-y-reverse sm:flex-row sm:space-y-0 sm:justify-end sm:space-x-2">
-              <DialogClose asChild>
-                <Button variant="outline" type="button" className="w-full sm:w-auto">Cancel</Button>
-              </DialogClose>
-              <SubmitButton />
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
+      <Button type="submit" disabled={isPending || !previewUrl} className="w-full">
+        {isPending ? (
+          <>
+            <Loader2 className="animate-spin mr-2" />
+            Uploading...
+          </>
+        ) : (
+          <>
+            <Upload className="mr-2 h-4 w-4" />
+            Confirm & Upload
+          </>
+        )}
+      </Button>
+    </form>
   );
 }
