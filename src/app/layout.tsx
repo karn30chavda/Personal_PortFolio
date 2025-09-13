@@ -1,8 +1,9 @@
 
-"use client"; // Add this since we'll use hooks here
+"use client";
 
 import type { Metadata } from 'next';
-import { useEffect, useState } from 'react'; // Import hooks
+import { usePathname } from 'next/navigation'; // Import usePathname
+import { useEffect } from 'react';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Header } from '@/components/header';
@@ -10,24 +11,17 @@ import { Toaster } from '@/components/ui/toaster';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { ScrollToTopButton } from '@/components/scroll-to-top-button';
 
-// Metadata should remain static if possible, or generated via generateMetadata
-// For this example, we keep it as is, assuming title is static.
-// export const metadata: Metadata = { // Commenting out for client component, can be re-added if layout becomes server again with separate client boundary
-//   title: 'ResuMatic | Karan Chavda',
-//   description: 'A modern, responsive resume website built with Next.js and Firebase Studio.',
-// };
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Date and time logic moved back to page.tsx
+  const pathname = usePathname();
+  const isDashboard = pathname.startsWith('/dashboard');
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* It's generally better practice to define static metadata outside client components or via generateMetadata */}
         <title>ResuMatic | Karan Chavda</title>
         <meta name="description" content="A modern, responsive resume website built with Next.js and Firebase Studio." />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -41,11 +35,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
-          {/* FixedDateTimeDisplay removed from here */}
+          {!isDashboard && <Header />}
           <main>{children}</main>
+          {!isDashboard && <ScrollToTopButton />}
           <Toaster />
-          <ScrollToTopButton />
         </ThemeProvider>
         <SpeedInsights />
       </body>
