@@ -1,3 +1,4 @@
+
 'use client';
 
 import { SectionWrapper } from '@/components/shared/section-wrapper';
@@ -7,7 +8,6 @@ import {
   Layers, 
   TerminalSquare, 
   DatabaseZap,
-  Binary,
   FileCode2,
   Palette,
   Braces,
@@ -28,8 +28,6 @@ import {
   Server,
   Wrench,
   Cpu,
-  FileJson,
-  FileText
 } from 'lucide-react';
 import { getSiteData } from '@/lib/actions';
 import { useEffect, useState } from 'react';
@@ -42,42 +40,40 @@ const iconMapping: { [key: string]: React.ReactNode } = {
   Wrench: <Wrench className="h-5 w-5 mr-2 text-primary" />,
   
   // Individual Skill Icons
-  'C/C++': <FileCode2 className="h-4 w-4" />,
-  HTML: <CodeXml className="h-4 w-4" />,
-  CSS: <Palette className="h-4 w-4" />,
-  JavaScript: <Braces className="h-4 w-4" />,
-  SQL: <Database className="h-4 w-4" />,
-  React: <Atom className="h-4 w-4" />,
-  Bootstrap: <LayoutGrid className="h-4 w-4" />,
-  FlexBox: <StretchHorizontal className="h-4 w-4" />,
-  'TailwindCSS': <Wind className="h-4 w-4" />,
-  'Shadcn/UI': <Component className="h-4 w-4" />,
-  Git: <GitFork className="h-4 w-4" />,
-  GitHub: <GithubIcon className="h-4 w-4" />,
-  'VisualStudioCode': <Code2 className="h-4 w-4" />,
-  Netlify: <Rocket className="h-4 w-4" />,
-  'FirebaseStudio': <LayoutDashboard className="h-4 w-4" />,
-  'GoogleFirebase': <CloudCog className="h-4 w-4" />,
-  Supabase: <Server className="h-4 w-4" />,
-  PWA: <AppWindow className="h-4 w-4" />,
-  Cloudinary: <ImageUp className="h-4 w-4" />,
+  FileCode2: <FileCode2 className="h-4 w-4" />,
+  CodeXml: <CodeXml className="h-4 w-4" />,
+  Palette: <Palette className="h-4 w-4" />,
+  Braces: <Braces className="h-4 w-4" />,
+  Database: <Database className="h-4 w-4" />,
+  Atom: <Atom className="h-4 w-4" />,
+  LayoutGrid: <LayoutGrid className="h-4 w-4" />,
+  StretchHorizontal: <StretchHorizontal className="h-4 w-4" />,
+  Wind: <Wind className="h-4 w-4" />,
+  Component: <Component className="h-4 w-4" />,
+  GitFork: <GitFork className="h-4 w-4" />,
+  Github: <GithubIcon className="h-4 w-4" />,
+  Rocket: <Rocket className="h-4 w-4" />,
+  LayoutDashboard: <LayoutDashboard className="h-4 w-4" />,
+  CloudCog: <CloudCog className="h-4 w-4" />,
+  Server: <Server className="h-4 w-4" />,
+  AppWindow: <AppWindow className="h-4 w-4" />,
+  ImageUp: <ImageUp className="h-4 w-4" />,
   
   // Fallbacks
   DefaultCategory: <Layers className="h-5 w-5 mr-2 text-primary" />,
   DefaultSkill: <Cpu className="h-4 w-4" />
 };
 
-const getIcon = (name: string, isCategory: boolean = false) => {
-    if (isCategory) {
-        return iconMapping[name] || iconMapping['DefaultCategory'];
+const getIcon = (name: string | undefined, isCategory: boolean = false) => {
+    if (!name) {
+        return iconMapping[isCategory ? 'DefaultCategory' : 'DefaultSkill'];
     }
-    // Normalize name for lookup (e.g., "Visual Studio Code" -> "VisualStudioCode")
-    const normalizedName = name.replace(/[^a-zA-Z0-9]/g, '');
-    return iconMapping[normalizedName] || iconMapping[name] || iconMapping['DefaultSkill'];
+    return iconMapping[name] || iconMapping[isCategory ? 'DefaultCategory' : 'DefaultSkill'];
 }
 
 type Skill = {
   name: string;
+  iconName?: string;
 };
 
 type SkillCategory = {
@@ -139,7 +135,7 @@ export function SkillsSection() {
                   variant="secondary" 
                   className="text-sm py-1 px-3 bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 flex items-center gap-1.5"
                 >
-                  {getIcon(skill.name)}
+                  {getIcon(skill.iconName)}
                   {skill.name}
                 </Badge>
               ))}

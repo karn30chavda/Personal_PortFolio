@@ -160,6 +160,7 @@ export async function updateAboutImage(prevState: any, formData: FormData) {
 
 const skillSchema = z.object({
   name: z.string().min(1),
+  iconName: z.string().optional(),
 });
 
 const skillCategorySchema = z.object({
@@ -193,7 +194,7 @@ export async function updateSkillsData(prevState: any, formData: FormData) {
       revalidatePath("/");
       revalidatePath("/dashboard/skills");
   
-      return { success: true, message: "Skills section updated successfully!" };
+      return { success: true, message: "Skills section updated successfully!", data: JSON.stringify(validatedFields.data) };
     } catch (error) {
       console.error("Error updating skills data:", error);
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
@@ -235,8 +236,10 @@ export async function updateSkillsData(prevState: any, formData: FormData) {
   
       const profileData = profileDocSnap.data() || {};
       const aboutData = aboutDocSnap.data() || {};
-      const skillsData = skillsDocSnap.data()?.skillsData || defaultSkills;
       
+      const skillsData = skillsDocSnap.data()?.skillsData;
+      const finalSkills = skillsData && skillsData.length > 0 ? skillsData : defaultSkills;
+
       const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
 
 My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
@@ -253,7 +256,7 @@ When I'm not coding, you can find me exploring new technologies, contributing to
           content: aboutData.content || defaultAboutContent,
           imageUrl: aboutData.imageUrl || "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
         },
-        skills: skillsData,
+        skills: finalSkills,
       };
       
     } catch (error) {
@@ -267,43 +270,43 @@ When I'm not coding, you can find me exploring new technologies, contributing to
       category: 'Core Languages & Markup',
       categoryIconName: 'Code2',
       skills: [
-        { name: 'C/C++' },
-        { name: 'HTML' },
-        { name: 'CSS' },
-        { name: 'JavaScript' },
-        { name: 'SQL' },
+        { name: 'C/C++', iconName: 'FileCode2' },
+        { name: 'HTML', iconName: 'CodeXml' },
+        { name: 'CSS', iconName: 'Palette' },
+        { name: 'JavaScript', iconName: 'Braces' },
+        { name: 'SQL', iconName: 'Database' },
       ]
     },
     {
       category: 'Frameworks, Libraries & CSS Tools',
       categoryIconName: 'Layers',
       skills: [
-        { name: 'React' },
-        { name: 'Bootstrap' },
-        { name: 'FlexBox' },
-        { name: 'Tailwind CSS' },
-        { name: 'Shadcn/UI' },
+        { name: 'React', iconName: 'Atom' },
+        { name: 'Bootstrap', iconName: 'LayoutGrid' },
+        { name: 'FlexBox', iconName: 'StretchHorizontal' },
+        { name: 'Tailwind CSS', iconName: 'Wind' },
+        { name: 'Shadcn/UI', iconName: 'Component' },
       ]
     },
     {
       category: 'Development Tools & Platforms',
       categoryIconName: 'TerminalSquare',
       skills: [
-        { name: 'Git' },
-        { name: 'GitHub' },
-        { name: 'Visual Studio Code' },
-        { name: 'Netlify' },
-        { name: 'Firebase Studio' },
+        { name: 'Git', iconName: 'GitFork' },
+        { name: 'GitHub', iconName: 'Github' },
+        { name: 'Visual Studio Code', iconName: 'Code2' },
+        { name: 'Netlify', iconName: 'Rocket' },
+        { name: 'Firebase Studio', iconName: 'LayoutDashboard' },
       ]
     },
     {
       category: 'Backend, BaaS & PWA',
       categoryIconName: 'DatabaseZap',
       skills: [
-        { name: 'Google Firebase' },
-        { name: 'Supabase' },
-        { name: 'PWA' },
-        { name: 'Cloudinary' },
+        { name: 'Google Firebase', iconName: 'CloudCog' },
+        { name: 'Supabase', iconName: 'Server' },
+        { name: 'PWA', iconName: 'AppWindow' },
+        { name: 'Cloudinary', iconName: 'ImageUp' },
       ]
     },
   ];

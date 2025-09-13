@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -22,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const skillSchema = z.object({
   name: z.string().min(1, 'Skill name is required'),
+  iconName: z.string().optional(),
 });
 
 const skillCategorySchema = z.object({
@@ -72,6 +74,7 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
   useEffect(() => {
     if (state?.message) {
       if (state.success) {
+        form.reset({ skillsData: JSON.parse(state.data || '[]') });
         toast({
           title: 'Success',
           description: state.message,
@@ -84,17 +87,19 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
         });
       }
     }
-  }, [state, toast]);
+  }, [state, toast, form]);
+
+  const handleFormAction = (formData: FormData) => {
+    const data = form.getValues();
+    formData.append('skillsData', JSON.stringify(data.skillsData));
+    formAction(formData);
+  };
+
 
   return (
     <Form {...form}>
       <form
-        action={() => {
-          const data = form.getValues();
-          const formData = new FormData();
-          formData.append('skillsData', JSON.stringify(data.skillsData));
-          formAction(formData);
-        }}
+        action={handleFormAction}
         className="space-y-8"
       >
         {fields.map((categoryItem, categoryIndex) => (
@@ -151,7 +156,7 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ category: '', categoryIconName: '', skills: [{ name: '' }] })}
+            onClick={() => append({ category: '', categoryIconName: '', skills: [{ name: '', iconName: '' }] })}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Category
@@ -174,24 +179,41 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
       <div className="pl-4 border-l-2 border-border ml-2 space-y-4">
         <h4 className="font-medium text-sm text-muted-foreground">Skills</h4>
         {fields.map((skillItem, skillIndex) => (
-          <div key={skillItem.id} className="flex items-center gap-2">
-            <FormField
-              name={`skillsData.${categoryIndex}.skills.${skillIndex}.name`}
-              control={control}
-              render={({ field }) => (
-                <FormItem className="flex-grow">
-                  <FormControl>
-                    <Input placeholder="e.g., JavaScript" {...field} className="flex-grow"/>
-                  </FormControl>
-                  <FormMessage/>
-                </FormItem>
-              )}
-            />
+          <div key={skillItem.id} className="flex items-start gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-grow">
+              <FormField
+                name={`skillsData.${categoryIndex}.skills.${skillIndex}.name`}
+                control={control}
+                render={({ field }) => (
+                  <FormItem className="flex-grow">
+                     <FormLabel className="text-xs">Skill Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., JavaScript" {...field} className="flex-grow"/>
+                    </FormControl>
+                    <FormMessage/>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name={`skillsData.${categoryIndex}.skills.${skillIndex}.iconName`}
+                control={control}
+                render={({ field }) => (
+                  <FormItem className="flex-grow">
+                     <FormLabel className="text-xs">Icon Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Braces" {...field} className="flex-grow"/>
+                    </FormControl>
+                    <FormMessage/>
+                  </FormItem>
+                )}
+              />
+            </div>
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={() => remove(skillIndex)}
+              className='mt-6'
             >
               <Trash className="h-4 w-4 text-destructive" />
                <span className="sr-only">Remove Skill</span>
@@ -202,7 +224,7 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
           type="button"
           size="sm"
           variant="secondary"
-          onClick={() => append({ name: '' })}
+          onClick={() => append({ name: '', iconName: '' })}
         >
           <Plus className="mr-2 h-4 w-4" />
           Add Skill
