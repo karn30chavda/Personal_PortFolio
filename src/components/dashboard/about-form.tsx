@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { z } from "zod";
 
@@ -9,8 +9,8 @@ import { updateAboutDetails } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const AboutDetailsSchema = z.object({
   paragraph1: z.string().min(1, "First paragraph is required."),
@@ -38,27 +38,29 @@ function SubmitButton() {
 
 export function AboutForm({ currentData }: { currentData: AboutDetailsFormValues }) {
   const [state, formAction] = useActionState(updateAboutDetails, { success: false, message: '', errors: {} });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (state?.message) {
+      if (state.success) {
+        toast({
+          title: "Success",
+          description: state.message,
+        });
+      } else {
+        const errorMsg = state.errors ? Object.values(state.errors).flat().join(' ') : '';
+        toast({
+          title: "Error",
+          description: state.message + ' ' + errorMsg,
+          variant: "destructive",
+        });
+      }
+    }
+  }, [state, toast]);
+
 
   return (
     <form action={formAction} className="space-y-6">
-      {state?.message && !state.success && (
-        <Alert variant='destructive'>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>
-            {state.message}
-            {state.errors && Object.values(state.errors).flat().map((error, i) => <div key={i}>{error}</div>)}
-          </AlertDescription>
-        </Alert>
-      )}
-      {state?.success && (
-         <Alert>
-           <CheckCircle className="h-4 w-4" />
-           <AlertTitle>Success</AlertTitle>
-           <AlertDescription>{state.message}</AlertDescription>
-         </Alert>
-      )}
-
       <div className="space-y-2">
         <Label htmlFor="paragraph1">Paragraph 1</Label>
         <Textarea id="paragraph1" name="paragraph1" className="min-h-[120px]" defaultValue={currentData.paragraph1} />

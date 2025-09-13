@@ -1,17 +1,17 @@
 
 "use client";
 
-import { useActionState, useState, useRef, type ChangeEvent, useTransition } from 'react';
+import { useActionState, useState, useRef, type ChangeEvent, useTransition, useEffect } from 'react';
 import Image from 'next/image';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Loader2, CheckCircle, AlertTriangle, CropIcon, Upload } from 'lucide-react';
+import { Loader2, CropIcon, Upload } from 'lucide-react';
 import { updateAboutImage } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 import 'react-image-crop/dist/ReactCrop.css';
 
@@ -64,6 +64,24 @@ export function AboutImageUploadForm({ currentImageUrl }: { currentImageUrl: str
   const imgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (state?.message) {
+      if (state.success) {
+        toast({
+          title: "Success",
+          description: state.message,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: state.message,
+          variant: "destructive",
+        });
+      }
+    }
+  }, [state, toast]);
 
   const onSelectFile = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -98,7 +116,6 @@ export function AboutImageUploadForm({ currentImageUrl }: { currentImageUrl: str
         formAction(formData);
     });
 
-    // This part runs after the action is initiated
     setIsCropModalOpen(false);
     setImgSrc('');
     if (fileInputRef.current) {
@@ -138,14 +155,6 @@ export function AboutImageUploadForm({ currentImageUrl }: { currentImageUrl: str
             </p>
         </div>
       </div>
-
-      {state?.message && (
-        <Alert variant={state.success ? 'default' : 'destructive'} className='mt-4'>
-          {state.success ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-          <AlertTitle>{state.success ? 'Success' : 'Error'}</AlertTitle>
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      )}
 
       <Dialog open={isCropModalOpen} onOpenChange={setIsCropModalOpen}>
         <DialogContent className="max-w-3xl">
