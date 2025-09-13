@@ -44,33 +44,17 @@ export function ProfileDetailsForm({ currentData }: { currentData: ProfileDetail
 
   const {
     register,
-    handleSubmit,
     formState: { errors },
-    getValues,
   } = useForm<ProfileDetailsFormValues>({
     resolver: zodResolver(ProfileDetailsSchema),
     defaultValues: currentData,
+    // The server action will return errors, so we can display them.
+    // We can show both client and server errors.
+    errors: state?.errors ? state.errors : undefined,
   });
 
-  const handleFormAction = (event: React.FormEvent<HTMLFormElement>) => {
-    // Prevent default form submission
-    event.preventDefault();
-
-    // Trigger validation
-    handleSubmit(() => {
-      // On valid submission, create FormData and call the action
-      const formData = new FormData();
-      const values = getValues();
-      formData.append('name', values.name);
-      formData.append('title', values.title);
-      formData.append('bio', values.bio);
-      formAction(formData);
-    })();
-  };
-
-
   return (
-    <form onSubmit={handleFormAction} className="space-y-6">
+    <form action={formAction} className="space-y-6">
       {state?.message && !state.success && (
         <Alert variant='destructive'>
           <AlertTriangle className="h-4 w-4" />
@@ -93,7 +77,6 @@ export function ProfileDetailsForm({ currentData }: { currentData: ProfileDetail
           {...register("name")}
         />
         {errors.name && <p className="text-sm font-medium text-destructive">{errors.name.message}</p>}
-        {state?.errors?.name && <p className="text-sm font-medium text-destructive">{state.errors.name[0]}</p>}
       </div>
 
       <div className="space-y-2">
@@ -103,7 +86,6 @@ export function ProfileDetailsForm({ currentData }: { currentData: ProfileDetail
           {...register("title")}
         />
         {errors.title && <p className="text-sm font-medium text-destructive">{errors.title.message}</p>}
-         {state?.errors?.title && <p className="text-sm font-medium text-destructive">{state.errors.title[0]}</p>}
       </div>
 
       <div className="space-y-2">
@@ -114,7 +96,6 @@ export function ProfileDetailsForm({ currentData }: { currentData: ProfileDetail
           {...register("bio")}
         />
         {errors.bio && <p className="text-sm font-medium text-destructive">{errors.bio.message}</p>}
-         {state?.errors?.bio && <p className="text-sm font-medium text-destructive">{state.errors.bio[0]}</p>}
       </div>
       
       <SubmitButton />
