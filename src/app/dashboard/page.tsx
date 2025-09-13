@@ -2,7 +2,6 @@
 import { SectionWrapper } from '@/components/shared/section-wrapper';
 import { ImageUploadForm } from '@/components/dashboard/image-upload-form';
 import { ProfileDetailsForm } from '@/components/dashboard/profile-details-form';
-import { ResumeUploadForm } from '@/components/dashboard/resume-upload-form';
 import { getProfileData } from '@/lib/actions';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
@@ -11,7 +10,7 @@ export default async function DashboardPage() {
 
   return (
     <SectionWrapper id="dashboard" title="Admin Dashboard">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Edit Your Profile</CardTitle>
@@ -28,15 +27,6 @@ export default async function DashboardPage() {
                 <ProfileDetailsForm currentData={profileData} />
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Update Your Resume</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResumeUploadForm currentResumeUrl={profileData.resumeUrl} />
           </CardContent>
         </Card>
       </div>
