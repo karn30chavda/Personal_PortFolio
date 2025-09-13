@@ -26,6 +26,7 @@ import { logout } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggleButton } from '@/components/theme-toggle-button';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Profile', icon: <User /> },
@@ -44,7 +45,7 @@ function MobileNav() {
             <DropdownMenuContent align="end">
                 {navItems.map((item) => (
                     <DropdownMenuItem key={item.label} asChild>
-                        <Link href={item.href}>
+                        <Link href={item.href} className="flex items-center gap-2">
                             {item.icon}
                             <span>{item.label}</span>
                         </Link>
@@ -52,14 +53,14 @@ function MobileNav() {
                 ))}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                    <Link href="/" target="_blank">
+                    <Link href="/" target="_blank" className="flex items-center gap-2">
                         <ExternalLink />
                         <span>Go to Site</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <form action={logout} className="w-full">
-                        <button type="submit" className="w-full flex items-center text-red-500">
+                        <button type="submit" className="w-full flex items-center text-red-500 gap-2">
                             <LogOut />
                             <span>Logout</span>
                         </button>
@@ -77,8 +78,13 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const isMobile = useIsMobile();
+  const [isMounted, setIsMounted] = useState(false);
 
-  if (isMobile === null) {
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
     return <div className="h-screen w-full bg-background" />; // or a loading spinner
   }
 
@@ -127,15 +133,14 @@ export default function DashboardLayout({
             </SidebarFooter>
           </Sidebar>
         )}
-        <div className="flex-1 flex flex-col">
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
+        <div className="flex-1 flex flex-col h-screen overflow-hidden">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6 shrink-0">
             <div className='flex items-center gap-2'>
-              {isMobile ? (
+              {!isMobile && <SidebarTrigger />}
+              {isMobile && (
                   <Link href="/" className="text-xl font-bold text-primary font-headline">
                       Karan Chavda
                   </Link>
-              ) : (
-                  <SidebarTrigger />
               )}
             </div>
             

@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, X } from "lucide-react"
+import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -16,8 +16,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -65,12 +63,12 @@ const SidebarProvider = React.forwardRef<
     }, []);
 
     React.useEffect(() => {
-        if (isMounted && isMobile !== null) {
+        if (isMounted) {
             const cookieValue = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
             const initialOpen = cookieValue ? cookieValue.split('=')[1] === 'true' : true;
             setOpen(initialOpen);
         }
-    }, [isMounted, isMobile]);
+    }, [isMounted]);
 
     const toggleSidebar = React.useCallback(() => {
         setOpen((prev) => {
@@ -109,7 +107,7 @@ const SidebarProvider = React.forwardRef<
       [state, isMobile, toggleSidebar]
     )
 
-    if (!isMounted) {
+    if (!isMounted || isMobile === null) {
       return null;
     }
 
@@ -144,15 +142,10 @@ SidebarProvider.displayName = "SidebarProvider"
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> & {
-    side?: "left" | "right"
-    variant?: "sidebar" | "floating" | "inset"
-  }
+  React.ComponentProps<"div">
 >(
   (
     {
-      side = "left",
-      variant = "sidebar",
       className,
       children,
       ...props
@@ -165,10 +158,8 @@ const Sidebar = React.forwardRef<
       <div
             ref={ref}
             data-state={state}
-            data-variant={variant}
-            data-side={side}
             className={cn(
-                "group text-sidebar-foreground transition-all duration-300 ease-in-out",
+                "group sticky top-0 h-screen text-sidebar-foreground transition-all duration-300 ease-in-out",
                 "flex flex-col bg-sidebar-background border-r border-sidebar-border",
                 "data-[state=expanded]:w-[var(--sidebar-width)] data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
                 className
@@ -218,8 +209,8 @@ const SidebarHeader = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="header"
-      className={cn("flex flex-col p-4 h-16 items-center justify-center", 
-        state === 'collapsed' && 'p-2',
+      className={cn("flex flex-col h-16 items-center justify-center shrink-0", 
+        state === 'collapsed' ? 'p-2' : 'p-4',
         className
       )}
       {...props}
@@ -237,8 +228,8 @@ const SidebarFooter = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-4 mt-auto", 
-        state === 'collapsed' && 'p-2',
+      className={cn("flex flex-col gap-2 mt-auto shrink-0", 
+        state === 'collapsed' ? 'p-2' : 'p-4',
         className
       )}
       {...props}
@@ -272,8 +263,8 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-4",
-        state === 'collapsed' && 'p-2',
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto",
+        state === 'collapsed' ? 'p-2' : 'p-4',
         className
       )}
       {...props}
