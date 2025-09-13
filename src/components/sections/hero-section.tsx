@@ -32,7 +32,7 @@ export async function HeroSection() {
         <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-border opacity-0 fade-in-load fade-in-delay-0">
           <Image
             src={profileData.imageUrl}
-            alt="Karan Chavda"
+            alt={profileData.name}
             fill
             className="object-cover"
             data-ai-hint="profile picture"
@@ -40,13 +40,13 @@ export async function HeroSection() {
           />
         </div>
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground font-headline opacity-0 fade-in-load fade-in-delay-1">
-          Karan Chavda
+          {profileData.name}
         </h1>
         <p className="text-xl sm:text-2xl text-muted-foreground font-medium opacity-0 fade-in-load fade-in-delay-2">
-          Creative Web Developer & UI/UX Enthusiast
+          {profileData.title}
         </p>
         <p className="max-w-xl mx-auto text-foreground/80 opacity-0 fade-in-load fade-in-delay-4">
-          Passionate about building beautiful, functional, and user-friendly web experiences. Let's create something amazing together.
+          {profileData.bio}
         </p>
 
         <div className="opacity-0 fade-in-load fade-in-delay-5">

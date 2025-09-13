@@ -1,6 +1,7 @@
 
 import { SectionWrapper } from '@/components/shared/section-wrapper';
 import { ImageUploadForm } from '@/components/dashboard/image-upload-form';
+import { ProfileDetailsForm } from '@/components/dashboard/profile-details-form';
 import { getProfileData } from '@/lib/actions';
 
 export default async function DashboardPage() {
@@ -11,6 +12,11 @@ export default async function DashboardPage() {
       <div className="grid gap-8">
         <div className="bg-card text-card-foreground p-8 rounded-lg shadow-md border">
           <p>Welcome to the dashboard. This is a protected area.</p>
+        </div>
+
+        <div className="bg-card text-card-foreground p-8 rounded-lg shadow-md border">
+          <h2 className="text-2xl font-semibold mb-4">Update Profile Details</h2>
+          <ProfileDetailsForm currentData={profileData} />
         </div>
 
         <div className="bg-card text-card-foreground p-8 rounded-lg shadow-md border">
