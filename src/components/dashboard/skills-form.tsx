@@ -1,6 +1,6 @@
 'use client';
 
-import { useFieldArray, useForm, Controller } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -14,12 +14,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Loader2 } from 'lucide-react';
 import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { updateSkillsData } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
 
 const skillSchema = z.object({
   name: z.string().min(1, 'Skill name is required'),
@@ -87,16 +86,17 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
     }
   }, [state, toast]);
 
-  const onSubmit = (data: SkillsFormValues) => {
-    const formData = new FormData();
-    formData.append('skillsData', JSON.stringify(data.skillsData));
-    formAction(formData);
-  };
-  
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        action={() => {
+          const data = form.getValues();
+          const formData = new FormData();
+          formData.append('skillsData', JSON.stringify(data.skillsData));
+          formAction(formData);
+        }}
+        className="space-y-8"
+      >
         {fields.map((categoryItem, categoryIndex) => (
           <div key={categoryItem.id} className="p-6 rounded-lg border bg-card/50 space-y-6">
             <div className="flex justify-between items-start gap-4">
@@ -175,11 +175,16 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
         <h4 className="font-medium text-sm text-muted-foreground">Skills</h4>
         {fields.map((skillItem, skillIndex) => (
           <div key={skillItem.id} className="flex items-center gap-2">
-            <Controller
+            <FormField
               name={`skillsData.${categoryIndex}.skills.${skillIndex}.name`}
               control={control}
               render={({ field }) => (
-                <Input placeholder="e.g., JavaScript" {...field} className="flex-grow"/>
+                <FormItem className="flex-grow">
+                  <FormControl>
+                    <Input placeholder="e.g., JavaScript" {...field} className="flex-grow"/>
+                  </FormControl>
+                  <FormMessage/>
+                </FormItem>
               )}
             />
             <Button
