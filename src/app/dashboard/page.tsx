@@ -8,28 +8,28 @@ export default async function DashboardPage() {
   const profileData = await getProfileData();
 
   return (
-    <div className="grid grid-cols-1 gap-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Picture</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="max-w-md mx-auto">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-1">
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile Picture</CardTitle>
+          </CardHeader>
+          <CardContent>
             <ImageUploadForm currentImageUrl={profileData.imageUrl} />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile & Hero Section Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="max-w-md mx-auto">
+      <div className="lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile & Hero Section Details</CardTitle>
+          </CardHeader>
+          <CardContent>
             <ProfileDetailsForm currentData={profileData} />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

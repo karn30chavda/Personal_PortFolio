@@ -33,9 +33,9 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
-        <Sidebar>
+        <Sidebar collapsible="icon">
           <SidebarHeader className="p-4">
-            <Link href="/" className="text-xl font-bold text-primary font-headline">
+            <Link href="/" className="text-xl font-bold text-primary font-headline group-data-[collapsible=icon]:hidden">
               Karan Chavda
             </Link>
           </SidebarHeader>
@@ -49,7 +49,7 @@ export default function DashboardLayout({
                       tooltip={item.label}
                     >
                       {item.icon}
-                      <span>{item.label}</span>
+                      <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
@@ -73,17 +73,15 @@ export default function DashboardLayout({
             </div>
           </SidebarFooter>
         </Sidebar>
-        <main className="flex-1 overflow-auto">
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm md:justify-end">
-            <div className="md:hidden">
-                <SidebarTrigger />
-            </div>
+        <div className="flex-1 flex flex-col">
+          <header className="sticky top-0 z-10 flex h-16 items-center border-b bg-background/80 px-4 backdrop-blur-sm">
+            <SidebarTrigger />
             {/* You can add user menu or other header items here for desktop */}
           </header>
-          <div className="p-4 sm:p-6 lg:p-8">
+          <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
             {children}
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );
