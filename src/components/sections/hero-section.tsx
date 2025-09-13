@@ -1,7 +1,7 @@
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { FileText, Eye, ArrowDownToLine, CalendarClock } from 'lucide-react';
+import { FileText, Eye, ArrowDownToLine } from 'lucide-react';
 import { SectionWrapper } from '@/components/shared/section-wrapper';
 import {
   Dialog,
@@ -14,12 +14,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
-interface HeroSectionProps {
-  currentIndianDate: string | null;
-  currentIndianTime: string | null;
-}
-
-export function HeroSection({ currentIndianDate, currentIndianTime }: HeroSectionProps) {
+export function HeroSection() {
   return (
     <SectionWrapper
       id="hero"
@@ -48,12 +43,6 @@ export function HeroSection({ currentIndianDate, currentIndianTime }: HeroSectio
         <p className="text-xl sm:text-2xl text-muted-foreground font-medium opacity-0 fade-in-load fade-in-delay-2">
           Creative Web Developer & UI/UX Enthusiast
         </p>
-        {(currentIndianDate && currentIndianTime) && (
-          <p className="text-sm text-muted-foreground flex items-center justify-center opacity-0 fade-in-load fade-in-delay-3">
-            <CalendarClock className="mr-1.5 h-4 w-4" />
-            {currentIndianDate}, {currentIndianTime}
-          </p>
-        )}
         <p className="max-w-xl mx-auto text-foreground/80 opacity-0 fade-in-load fade-in-delay-4">
           Passionate about building beautiful, functional, and user-friendly web experiences. Let's create something amazing together.
         </p>
