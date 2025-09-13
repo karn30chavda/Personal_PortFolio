@@ -244,6 +244,47 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
   }
 }
 
+const certificateSchema = z.object({
+    title: z.string().min(1, 'Title is required'),
+    issuer: z.string().min(1, 'Issuer is required'),
+    date: z.string().min(1, 'Date is required'),
+    credentialUrl: z.string().url().optional().or(z.literal('')),
+});
+  
+const certificatesFormSchema = z.array(certificateSchema);
+
+export async function updateCertificatesData(prevState: any, formData: FormData) {
+    try {
+        const certificatesDataString = formData.get('certificatesData') as string;
+        if (!certificatesDataString) {
+        return { success: false, message: 'No certificates data provided.' };
+        }
+
+        const certificatesDataJSON = JSON.parse(certificatesDataString);
+        const validatedFields = certificatesFormSchema.safeParse(certificatesDataJSON);
+
+        if (!validatedFields.success) {
+            console.log(validatedFields.error.flatten());
+            return {
+                success: false,
+                message: "Validation failed. Ensure all fields are filled correctly.",
+            };
+        }
+        
+        await setDoc(doc(db, "siteConfig", "certificates"), { certificatesData: validatedFields.data });
+
+        revalidatePath("/");
+        revalidatePath("/dashboard/certificates");
+
+        return { success: true, message: "Certificates section updated successfully!", data: JSON.stringify(validatedFields.data) };
+    } catch (error) {
+        console.error("Error updating certificates data:", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+        return { success: false, message: `Failed to update certificates: ${errorMessage}` };
+    }
+}
+
+
   type SiteData = {
     imageUrl: string;
     name: string;
@@ -256,6 +297,7 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
     };
     skills: z.infer<typeof skillsFormSchema>;
     projects: z.infer<typeof projectsFormSchema>;
+    certificates: z.infer<typeof certificatesFormSchema>;
   };
   
   export async function getSiteData(): Promise<SiteData> {
@@ -264,6 +306,7 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
       const aboutDocRef = doc(db, "siteConfig", "about");
       const skillsDocRef = doc(db, "siteConfig", "skills");
       const projectsDocRef = doc(db, "siteConfig", "projects");
+      const certificatesDocRef = doc(db, "siteConfig", "certificates");
   
       // Ensure documents exist
       await Promise.all([
@@ -271,13 +314,15 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
           setDoc(aboutDocRef, {}, { merge: true }),
           setDoc(skillsDocRef, {}, { merge: true }),
           setDoc(projectsDocRef, {}, { merge: true }),
+          setDoc(certificatesDocRef, {}, { merge: true }),
       ]);
   
-      const [profileDocSnap, aboutDocSnap, skillsDocSnap, projectsDocSnap] = await Promise.all([
+      const [profileDocSnap, aboutDocSnap, skillsDocSnap, projectsDocSnap, certificatesDocSnap] = await Promise.all([
         getDoc(profileDocRef),
         getDoc(aboutDocRef),
         getDoc(skillsDocRef),
-        getDoc(projectsDocRef)
+        getDoc(projectsDocRef),
+        getDoc(certificatesDocRef),
       ]);
   
       const profileData = profileDocSnap.data() || {};
@@ -288,6 +333,9 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
 
       const projectsData = projectsDocSnap.data()?.projectsData;
       const finalProjects = projectsData && projectsData.length > 0 ? projectsData : defaultProjects;
+
+      const certificatesData = certificatesDocSnap.data()?.certificatesData;
+      const finalCertificates = certificatesData && certificatesData.length > 0 ? certificatesData : defaultCertificates;
 
       const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
 
@@ -307,6 +355,7 @@ When I'm not coding, you can find me exploring new technologies, contributing to
         },
         skills: finalSkills,
         projects: finalProjects,
+        certificates: finalCertificates,
       };
       
     } catch (error) {
@@ -396,6 +445,21 @@ When I'm not coding, you can find me exploring new technologies, contributing to
     },
   ];
 
+  const defaultCertificates = [
+    {
+      title: 'Responsive Web Design',
+      issuer: 'freeCodeCamp',
+      date: 'December 2023',
+      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/responsive-web-design'
+    },
+    {
+      title: 'JavaScript Algorithms and Data Structures',
+      issuer: 'freeCodeCamp',
+      date: 'December 2023',
+      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/javascript-algorithms-and-data-structures'
+    }
+  ];
+
   function getDefaultSiteData(): SiteData {
     const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
 
@@ -414,7 +478,8 @@ When I'm not coding, you can find me exploring new technologies, contributing to
         imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       },
       skills: defaultSkills,
-      projects: defaultProjects
+      projects: defaultProjects,
+      certificates: defaultCertificates,
     };
   }
 

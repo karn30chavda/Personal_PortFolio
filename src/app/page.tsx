@@ -6,6 +6,7 @@ import { SkillsSection } from '@/components/sections/skills-section';
 import { ProjectsSection } from '@/components/sections/projects-section';
 import { ContactSection } from '@/components/sections/contact-section';
 import { Separator } from '@/components/ui/separator';
+import { CertificatesSection } from '@/components/sections/certificates-section';
 
 export default function HomePage() {
   const currentYear = new Date().getFullYear();
@@ -25,6 +26,10 @@ export default function HomePage() {
         <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
       </div>
       <SkillsSection />
+      <div className="w-full max-w-5xl px-4">
+        <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
+      </div>
+      <CertificatesSection />
       <div className="w-full max-w-5xl px-4">
         <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
       </div>
