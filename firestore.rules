@@ -1,22 +1,22 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny all reads and writes
+    
+    // Default to denying all reads and writes to ensure security.
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Allow anyone to read the public site configuration.
-    // Only authenticated users can write to it.
+    // Allow anyone to read the public site configuration data.
+    // Only allow authenticated users (the admin) to write to the configuration.
     match /siteConfig/{docId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
-    // Allow anyone to create (submit) a message.
-    // Only authenticated users can read the submissions.
+    // Allow anyone to create (submit) a new contact message.
+    // Only allow authenticated users (the admin) to read, update, or delete submissions.
     match /contactSubmissions/{submissionId} {
       allow create: if true;
       allow read, update, delete: if request.auth != null;
