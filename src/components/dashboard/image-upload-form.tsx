@@ -107,23 +107,25 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
     setCrop(initialCrop);
   };
   
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  // This is now the primary action handler for the form.
+  const handleFormAction = async (formData: FormData) => {
     if (completedCrop?.width && completedCrop?.height && imgRef.current && croppedImageRef.current) {
-        const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
-        croppedImageRef.current.value = dataUrl;
+      const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
+      // We are setting the value in the hidden input, which is part of the form.
+      // So we no longer need to manually append to formData.
+      croppedImageRef.current.value = dataUrl;
+      formData.set('croppedImage', dataUrl);
     }
     
-    // Now submit the form programmatically
-    const form = event.currentTarget;
-    const formData = new FormData(form);
     formAction(formData);
 
+    // Reset states after submission
+    // Note: this may not be necessary if the action causes a re-render/redirect
+    setIsCropModalOpen(false);
+    setImgSrc('');
     if (fileInputRef.current) {
         fileInputRef.current.value = '';
     }
-    setIsCropModalOpen(false);
-    setImgSrc('');
   };
 
 
@@ -169,13 +171,11 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
 
       <Dialog open={isCropModalOpen} onOpenChange={setIsCropModalOpen}>
         <DialogContent className="max-w-md">
-          <form action={formAction} onSubmit={async (e) => {
-              e.preventDefault();
-              if (completedCrop?.width && completedCrop?.height && imgRef.current && croppedImageRef.current) {
+          <form action={async (formData) => {
+              if (completedCrop?.width && completedCrop?.height && imgRef.current) {
                   const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
-                  croppedImageRef.current.value = dataUrl;
+                  formData.set('croppedImage', dataUrl);
               }
-              const formData = new FormData(e.currentTarget);
               formAction(formData);
               setIsCropModalOpen(false);
               setImgSrc('');
