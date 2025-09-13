@@ -23,7 +23,7 @@ export function AboutSection() {
     fetchData();
   }, []);
 
-  const paragraphs = aboutData?.content.split('\n\n').filter(p => p.trim() !== '') || [];
+  const paragraphs = aboutData?.content.split('\n').filter(p => p.trim() !== '') || [];
 
   if (!aboutData) {
     return (
