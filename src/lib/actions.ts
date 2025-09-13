@@ -76,7 +76,7 @@ export async function getProfileData() {
     const docRef = doc(db, "siteConfig", "profile");
     const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
+    if (docSnap.exists() && docSnap.data().imageUrl) {
       return docSnap.data();
     } else {
       // Return a default or initial state if no data is found
