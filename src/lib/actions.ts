@@ -47,7 +47,6 @@ export async function updateProfilePicture(prevState: any, formData: FormData) {
 
     const imageUrl = results.secure_url;
     
-    // Use setDoc with merge: true to create or update the document
     await setDoc(doc(db, "siteConfig", "profile"), {
       imageUrl: imageUrl,
     }, { merge: true });
@@ -99,8 +98,49 @@ export async function updateProfileDetails(prevState: any, formData: FormData) {
   }
 }
 
+export async function updateResume(prevState: any, formData: FormData) {
+  try {
+    const resumeFile = formData.get('resume') as File;
+    if (!resumeFile || resumeFile.size === 0) {
+      return { success: false, message: 'No file selected for upload.' };
+    }
 
-export async function getProfileData(): Promise<{ imageUrl: string; name: string; title: string; bio: string; }> {
+    // Convert file to buffer to upload to Cloudinary
+    const arrayBuffer = await resumeFile.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const results: any = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream({
+            folder: 'portfolio-resume',
+            resource_type: 'raw',
+        }, (error, result) => {
+            if (error) {
+                return reject(error);
+            }
+            resolve(result);
+        }).end(buffer);
+    });
+
+    const resumeUrl = results.secure_url;
+    
+    await setDoc(doc(db, "siteConfig", "profile"), {
+      resumeUrl: resumeUrl,
+    }, { merge: true });
+
+    revalidatePath("/");
+    revalidatePath("/dashboard");
+    
+    return { success: true, message: "Resume updated successfully!" };
+
+  } catch (error) {
+    console.error("Error updating resume:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    return { success: false, message: `Failed to update resume: ${errorMessage}` };
+  }
+}
+
+
+export async function getProfileData(): Promise<{ imageUrl: string; name: string; title: string; bio: string; resumeUrl: string; }> {
   try {
     const docRef = doc(db, "siteConfig", "profile");
     const docSnap = await getDoc(docRef);
@@ -112,6 +152,7 @@ export async function getProfileData(): Promise<{ imageUrl: string; name: string
         name: data.name || 'Karan Chavda',
         title: data.title || 'Creative Web Developer & UI/UX Enthusiast',
         bio: data.bio || 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
+        resumeUrl: data.resumeUrl || '/karanresume.pdf',
       };
     } else {
       // Return a default or initial state if no data is found
@@ -120,6 +161,7 @@ export async function getProfileData(): Promise<{ imageUrl: string; name: string
         name: 'Karan Chavda',
         title: 'Creative Web Developer & UI/UX Enthusiast',
         bio: 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
+        resumeUrl: '/karanresume.pdf',
       };
     }
   } catch (error) {
@@ -130,6 +172,7 @@ export async function getProfileData(): Promise<{ imageUrl: string; name: string
       name: 'Karan Chavda',
       title: 'Creative Web Developer & UI/UX Enthusiast',
       bio: 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
+      resumeUrl: '/karanresume.pdf',
     };
   }
 }
