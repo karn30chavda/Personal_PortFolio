@@ -4,8 +4,43 @@
 import { SectionWrapper } from '@/components/shared/section-wrapper';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { getProfileData } from '@/lib/actions';
+import { useEffect, useState } from 'react';
+
+type AboutData = {
+  paragraph1: string;
+  paragraph2: string;
+  paragraph3: string;
+  imageUrl: string;
+}
 
 export function AboutSection() {
+  const [aboutData, setAboutData] = useState<AboutData | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      const profileData = await getProfileData();
+      setAboutData(profileData.about);
+    }
+    fetchData();
+  }, []);
+
+  if (!aboutData) {
+    return (
+      <SectionWrapper id="about" title="About Me">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div className="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-xl bg-muted animate-pulse"></div>
+          <div className="space-y-4">
+            <div className="h-6 bg-muted rounded w-full animate-pulse"></div>
+            <div className="h-6 bg-muted rounded w-5/6 animate-pulse"></div>
+            <div className="h-6 bg-muted rounded w-full animate-pulse"></div>
+            <div className="h-6 bg-muted rounded w-4/6 animate-pulse"></div>
+          </div>
+        </div>
+      </SectionWrapper>
+    );
+  }
+
   return (
     <SectionWrapper id="about" title="About Me" animationDelay={1}>
       <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
@@ -17,8 +52,8 @@ export function AboutSection() {
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <Image
-            src="https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080"
-            alt="About me visual - Minion character"
+            src={aboutData.imageUrl}
+            alt="About me visual"
             fill
             className="transform transition-transform duration-500 group-hover:scale-105 object-cover"
             data-ai-hint="minion character"
@@ -31,15 +66,9 @@ export function AboutSection() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
         >
-          <p>
-            Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
-          </p>
-          <p>
-            My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
-          </p>
-          <p>
-            When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.
-          </p>
+          <p>{aboutData.paragraph1}</p>
+          <p>{aboutData.paragraph2}</p>
+          <p>{aboutData.paragraph3}</p>
         </motion.div>
       </div>
     </SectionWrapper>
