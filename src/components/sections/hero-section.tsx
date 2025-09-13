@@ -21,11 +21,6 @@ export function HeroSection() {
       className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center text-center !py-0"
       animationDelay={0}
     >
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] sm:w-[40vw] sm:h-[40vw] bg-primary/30 dark:bg-primary/25 rounded-full blur-3xl animate-float-bubble-1 border-2 border-primary/60 dark:border-primary/50"></div>
-        <div className="absolute top-1/4 right-1/4 transform translate-x-1/4 -translate-y-1/4 w-[45vw] h-[45vw] sm:w-[35vw] sm:h-[35vw] bg-accent/30 dark:bg-accent/25 rounded-full blur-3xl animate-float-bubble-2 border-2 border-accent/60 dark:border-accent/50"></div>
-      </div>
-
       <div className="relative z-10 space-y-6">
         <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-border opacity-0 fade-in-load fade-in-delay-0">
           <Image
