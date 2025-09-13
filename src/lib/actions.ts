@@ -131,14 +131,25 @@ export async function updateAboutDetails(prevState: any, formData: FormData) {
 
 export async function updateAboutImage(prevState: any, formData: FormData) {
     try {
-      const croppedImage = formData.get('croppedImage') as string;
-      if (!croppedImage) {
-        return { success: false, message: 'No cropped image data found.' };
+      const imageFile = formData.get('image') as File;
+      if (!imageFile || imageFile.size === 0) {
+        return { success: false, message: 'No image provided.' };
       }
-  
-      const results = await cloudinary.uploader.upload(croppedImage, {
-        folder: 'portfolio-about',
-      });
+      
+      const arrayBuffer = await imageFile.arrayBuffer();
+      const buffer = new Uint8Array(arrayBuffer);
+      
+      const results = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream({
+          folder: 'portfolio-about',
+        }, (error, result) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(result);
+        }).end(buffer);
+      }) as any;
   
       const imageUrl = results.secure_url;
       
@@ -159,8 +170,8 @@ export async function updateAboutImage(prevState: any, formData: FormData) {
   }
 
 const skillSchema = z.object({
-  name: z.string().min(1, 'Skill name is required'),
-  iconName: z.string().optional(),
+    name: z.string().min(1, 'Skill name is required'),
+    iconName: z.string().optional(),
 });
 
 const skillCategorySchema = z.object({
@@ -248,6 +259,7 @@ const certificateSchema = z.object({
     title: z.string().min(1, 'Title is required'),
     issuer: z.string().min(1, 'Issuer is required'),
     date: z.string().min(1, 'Date is required'),
+    imageUrl: z.string().optional(),
     credentialUrl: z.string().url().optional().or(z.literal('')),
 });
   
@@ -366,49 +378,49 @@ When I'm not coding, you can find me exploring new technologies, contributing to
 
   const defaultSkills = [
     {
-      category: 'Core Languages & Markup',
-      categoryIconName: 'Code2',
-      skills: [
-        { name: 'C/C++', iconName: 'FileCode2' },
-        { name: 'HTML', iconName: 'CodeXml' },
-        { name: 'CSS', iconName: 'Palette' },
-        { name: 'JavaScript', iconName: 'Braces' },
-        { name: 'SQL', iconName: 'Database' },
-      ]
+        category: 'Core Languages & Markup',
+        categoryIconName: 'Code2',
+        skills: [
+            { name: 'C/C++', iconName: 'FileCode2' },
+            { name: 'HTML', iconName: 'CodeXml' },
+            { name: 'CSS', iconName: 'Palette' },
+            { name: 'JavaScript', iconName: 'Braces' },
+            { name: 'SQL', iconName: 'Database' },
+        ]
     },
     {
-      category: 'Frameworks, Libraries & CSS Tools',
-      categoryIconName: 'Layers',
-      skills: [
-        { name: 'React', iconName: 'Atom' },
-        { name: 'Bootstrap', iconName: 'LayoutGrid' },
-        { name: 'FlexBox', iconName: 'StretchHorizontal' },
-        { name: 'Tailwind CSS', iconName: 'Wind' },
-        { name: 'Shadcn/UI', iconName: 'Component' },
-      ]
+        category: 'Frameworks, Libraries & CSS Tools',
+        categoryIconName: 'Layers',
+        skills: [
+            { name: 'React', iconName: 'Atom' },
+            { name: 'Bootstrap', iconName: 'LayoutGrid' },
+            { name: 'FlexBox', iconName: 'StretchHorizontal' },
+            { name: 'Tailwind CSS', iconName: 'Wind' },
+            { name: 'Shadcn/UI', iconName: 'Component' },
+        ]
     },
     {
-      category: 'Development Tools & Platforms',
-      categoryIconName: 'TerminalSquare',
-      skills: [
-        { name: 'Git', iconName: 'GitFork' },
-        { name: 'GitHub', iconName: 'Github' },
-        { name: 'Visual Studio Code', iconName: 'Code2' },
-        { name: 'Netlify', iconName: 'Rocket' },
-        { name: 'Firebase Studio', iconName: 'LayoutDashboard' },
-      ]
+        category: 'Development Tools & Platforms',
+        categoryIconName: 'TerminalSquare',
+        skills: [
+            { name: 'Git', iconName: 'GitFork' },
+            { name: 'GitHub', iconName: 'Github' },
+            { name: 'Visual Studio Code', iconName: 'Code2' },
+            { name: 'Netlify', iconName: 'Rocket' },
+            { name: 'Firebase Studio', iconName: 'LayoutDashboard' },
+        ]
     },
     {
-      category: 'Backend, BaaS & PWA',
-      categoryIconName: 'DatabaseZap',
-      skills: [
-        { name: 'Google Firebase', iconName: 'CloudCog' },
-        { name: 'Supabase', iconName: 'Server' },
-        { name: 'PWA', iconName: 'AppWindow' },
-        { name: 'Cloudinary', iconName: 'ImageUp' },
-      ]
+        category: 'Backend, BaaS & PWA',
+        categoryIconName: 'DatabaseZap',
+        skills: [
+            { name: 'Google Firebase', iconName: 'CloudCog' },
+            { name: 'Supabase', iconName: 'Server' },
+            { name: 'PWA', iconName: 'AppWindow' },
+            { name: 'Cloudinary', iconName: 'ImageUp' },
+        ]
     },
-  ];
+];
 
   const defaultProjects = [
     {
@@ -450,13 +462,15 @@ When I'm not coding, you can find me exploring new technologies, contributing to
       title: 'Responsive Web Design',
       issuer: 'freeCodeCamp',
       date: 'December 2023',
-      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/responsive-web-design'
+      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/responsive-web-design',
+      imageUrl: '/images/responsive-web-design.png',
     },
     {
       title: 'JavaScript Algorithms and Data Structures',
       issuer: 'freeCodeCamp',
       date: 'December 2023',
-      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/javascript-algorithms-and-data-structures'
+      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/javascript-algorithms-and-data-structures',
+      imageUrl: '/images/javascript-algos.png',
     }
   ];
 

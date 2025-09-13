@@ -8,11 +8,13 @@ import { getSiteData } from '@/lib/actions';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { Award, ExternalLink } from 'lucide-react';
+import Image from 'next/image';
 
 type Certificate = {
   title: string;
   issuer: string;
   date: string;
+  imageUrl?: string;
   credentialUrl?: string;
 };
 
@@ -30,9 +32,18 @@ export function CertificatesSection() {
   if (!certificates) {
     return (
       <SectionWrapper id="certificates" title="My Certificates">
-        <div className="space-y-4">
-          {[...Array(3)].map((_, index) => (
-            <Skeleton key={index} className="h-24 w-full" />
+        <div className="grid md:grid-cols-2 gap-8">
+          {[...Array(2)].map((_, index) => (
+            <Card key={index} className="flex flex-col">
+              <Skeleton className="h-48 w-full" />
+              <div className="p-4 flex-grow">
+                <Skeleton className="h-5 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+              <div className='p-4 pt-0'>
+                <Skeleton className="h-9 w-24" />
+              </div>
+            </Card>
           ))}
         </div>
       </SectionWrapper>
@@ -48,28 +59,28 @@ export function CertificatesSection() {
            </p>
          </div>
       ) : (
-        <div className="space-y-4 max-w-3xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8">
           {certificates.map((cert, index) => (
-            <Card key={index} className="transition-all duration-300 hover:shadow-lg dark:hover:shadow-primary/20">
-              <div className="flex items-center justify-between p-4 sm:p-6">
-                <div className="flex items-center gap-4">
-                  <div className="hidden sm:block bg-primary/10 p-3 rounded-full">
-                    <Award className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className='flex-grow'>
-                    <CardTitle className="text-base sm:text-lg font-semibold text-foreground">{cert.title}</CardTitle>
-                    <CardDescription className="text-sm text-foreground/80 mt-1">{cert.issuer} - {cert.date}</CardDescription>
-                  </div>
+            <Card key={index} className="transition-all duration-300 hover:shadow-lg dark:hover:shadow-primary/20 overflow-hidden flex flex-col">
+              {cert.imageUrl && (
+                <div className="relative w-full h-48">
+                  <Image src={cert.imageUrl} alt={cert.title} fill className="object-cover" />
                 </div>
-                {cert.credentialUrl && (
-                  <Button variant="outline" size="sm" asChild className="shrink-0 ml-2">
-                    <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                      <span className='hidden md:inline'>View</span>
-                    </a>
-                  </Button>
-                )}
+              )}
+              <div className="p-4 flex-grow">
+                <CardTitle className="text-lg font-semibold text-foreground">{cert.title}</CardTitle>
+                <CardDescription className="text-sm text-foreground/80 mt-1">{cert.issuer} - {cert.date}</CardDescription>
               </div>
+              {cert.credentialUrl && (
+                  <CardFooter className='p-4 pt-0'>
+                    <Button variant="outline" size="sm" asChild className="shrink-0">
+                      <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+                        View Credential
+                      </a>
+                    </Button>
+                  </CardFooter>
+                )}
             </Card>
           ))}
         </div>
