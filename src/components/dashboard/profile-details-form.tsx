@@ -46,13 +46,31 @@ export function ProfileDetailsForm({ currentData }: { currentData: ProfileDetail
     register,
     handleSubmit,
     formState: { errors },
+    getValues,
   } = useForm<ProfileDetailsFormValues>({
     resolver: zodResolver(ProfileDetailsSchema),
     defaultValues: currentData,
   });
 
+  const handleFormAction = (event: React.FormEvent<HTMLFormElement>) => {
+    // Prevent default form submission
+    event.preventDefault();
+
+    // Trigger validation
+    handleSubmit(() => {
+      // On valid submission, create FormData and call the action
+      const formData = new FormData();
+      const values = getValues();
+      formData.append('name', values.name);
+      formData.append('title', values.title);
+      formData.append('bio', values.bio);
+      formAction(formData);
+    })();
+  };
+
+
   return (
-    <form action={handleSubmit(data => formAction(new FormData()))} className="space-y-6">
+    <form onSubmit={handleFormAction} className="space-y-6">
       {state?.message && !state.success && (
         <Alert variant='destructive'>
           <AlertTriangle className="h-4 w-4" />
@@ -99,11 +117,6 @@ export function ProfileDetailsForm({ currentData }: { currentData: ProfileDetail
          {state?.errors?.bio && <p className="text-sm font-medium text-destructive">{state.errors.bio[0]}</p>}
       </div>
       
-      {/* Hidden inputs to pass data to the form action */}
-      <input type="hidden" {...register("name")} name="name" />
-      <input type="hidden" {...register("title")} name="title" />
-      <input type="hidden" {...register("bio")} name="bio" />
-
       <SubmitButton />
     </form>
   );
