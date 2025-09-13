@@ -167,13 +167,7 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
 
       <Dialog open={isCropModalOpen} onOpenChange={setIsCropModalOpen}>
         <DialogContent className="max-w-md">
-          <form action={async (formData) => {
-              if (completedCrop?.width && completedCrop?.height && imgRef.current) {
-                  const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
-                  formData.set('croppedImage', dataUrl);
-              }
-              handleFormAction(formData);
-          }}>
+          <form action={handleFormAction}>
             <DialogHeader>
               <DialogTitle>Crop Your Image</DialogTitle>
             </DialogHeader>
@@ -198,13 +192,11 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
               </ReactCrop>
               </div>
             )}
-            <DialogFooter className="mt-4 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 sm:space-y-0">
+            <DialogFooter className="mt-4 flex-col-reverse space-y-2 space-y-reverse sm:flex-row sm:space-y-0 sm:justify-end sm:space-x-2">
               <DialogClose asChild>
                 <Button variant="outline" type="button" className="w-full sm:w-auto">Cancel</Button>
               </DialogClose>
-              <div className="w-full sm:w-auto mb-2 sm:mb-0">
-                <SubmitButton />
-              </div>
+              <SubmitButton />
             </DialogFooter>
           </form>
         </DialogContent>
@@ -212,3 +204,4 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
     </div>
   );
 }
+
