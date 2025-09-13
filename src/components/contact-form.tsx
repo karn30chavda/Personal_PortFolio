@@ -1,76 +1,43 @@
 
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
-import { useState } from "react"
-import { submitToNetlifyForm } from "@/lib/actions";
-
-const contactFormSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  message: z.string().min(10, {
-    message: "Message must be at least 10 characters.",
-  }).max(500, {
-    message: "Message must not exceed 500 characters."
-  }),
-})
-
-type ContactFormValues = z.infer<typeof contactFormSchema>
+import { useState, type FormEvent } from "react"
 
 export function ContactForm() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const form = useForm<ContactFormValues>({
-    resolver: zodResolver(contactFormSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      message: "",
-    },
-  })
-
-  async function onSubmit(data: ContactFormValues) {
+  // This is a simplified submission handler for a static Netlify form.
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setIsSubmitting(true)
-    try {
-      const result = await submitToNetlifyForm(data);
 
-      if (result.success) {
-        toast({
-          title: "Message Sent!",
-          description: "Thanks for reaching out. Your message has been submitted.",
-        })
-        form.reset()
-      } else {
-        console.error("Netlify form submission error via action:", result.error);
-        toast({
-          title: "Error",
-          description: result.error || "Form submission failed. Please try again.",
-          variant: "destructive",
-        })
-      }
+    const formData = new FormData(event.currentTarget);
+    
+    // The fetch request submits the form data to Netlify's backend.
+    try {
+      await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(formData as any).toString(),
+      });
+      
+      toast({
+        title: "Message Sent!",
+        description: "Thanks for reaching out. Your message has been submitted.",
+      });
+
+      // Reset the form after successful submission
+      (event.target as HTMLFormElement).reset();
+
     } catch (error) {
-      console.error("Error calling submitToNetlifyForm action:", error)
+      console.error("Form submission error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -79,73 +46,59 @@ export function ContactForm() {
     } finally {
       setIsSubmitting(false)
     }
-  }
+  };
 
   return (
-    <Form {...form}>
-      {/* The name attribute on the form is still useful for Netlify to identify the form,
-          even if data-netlify="true" is not used directly here for SPA/App Router.
-          The server action will include "form-name" in the payload. */}
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6 bg-card p-6 md:p-8 rounded-lg shadow-lg border border-border"
-        name="contact" // This name should match the 'form-name' in your server action
-      >
-        {/* No data-netlify or honeypot attributes needed here when using a server action to submit */}
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <Input placeholder="John Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email Address</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="you@example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
+    // Netlify requires the form to have the `data-netlify="true"` attribute
+    // and a hidden input with the form's name.
+    <form
+      name="contact"
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+      onSubmit={handleSubmit}
+      className="space-y-6 bg-card p-6 md:p-8 rounded-lg shadow-lg border border-border"
+    >
+      {/* Hidden input for Netlify to identify the form */}
+      <input type="hidden" name="form-name" value="contact" />
+      <p className="hidden">
+        <label>
+          Don’t fill this out if you’re human: <input name="bot-field" />
+        </label>
+      </p>
+
+      <div className="space-y-2">
+        <Label htmlFor="name">Full Name</Label>
+        <Input id="name" name="name" placeholder="John Doe" required />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email">Email Address</Label>
+        <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="message">Message</Label>
+        <Textarea
+          id="message"
           name="message"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Message</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Your message here..."
-                  className="min-h-[120px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          placeholder="Your message here..."
+          className="min-h-[120px]"
+          required
+          minLength={10}
         />
-        <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : (
-            "Send Message"
-          )}
-        </Button>
-      </form>
-    </Form>
+      </div>
+
+      <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isSubmitting}>
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Sending...
+          </>
+        ) : (
+          "Send Message"
+        )}
+      </Button>
+    </form>
   )
 }
