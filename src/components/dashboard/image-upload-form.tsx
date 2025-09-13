@@ -83,7 +83,6 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
 
   const onSelectFile = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -106,29 +105,26 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
     );
     setCrop(initialCrop);
   };
-
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = event.currentTarget;
+  
+  // This function will be called when the form is submitted
+  const handleFormAction = async (formData: FormData) => {
     if (completedCrop?.width && completedCrop?.height && imgRef.current) {
-      const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
-      
-      // Create a new FormData object from the form
-      const formData = new FormData(form);
-      // Set the cropped image data
-      formData.set('croppedImage', dataUrl);
-  
-      // Pass the new FormData object to the server action
-      formAction(formData);
-  
-      // Reset states after submission
-      setIsCropModalOpen(false);
-      setImgSrc('');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+        const dataUrl = await getCroppedImg(imgRef.current, completedCrop);
+        formData.set('croppedImage', dataUrl);
     }
+    
+    // Call the server action
+    formAction(formData);
+
+    // This part runs after the action is initiated
+    // Note: State updates might not be immediate if the action causes a re-render
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+    setIsCropModalOpen(false);
+    setImgSrc('');
   };
+
 
   return (
     <div className="space-y-6">
@@ -172,7 +168,7 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
 
       <Dialog open={isCropModalOpen} onOpenChange={setIsCropModalOpen}>
         <DialogContent className="max-w-md">
-          <form onSubmit={handleFormSubmit}>
+          <form action={handleFormAction}>
             <DialogHeader>
               <DialogTitle>Crop Your Image</DialogTitle>
             </DialogHeader>
@@ -197,12 +193,12 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
               </ReactCrop>
               </div>
             )}
-            <input type="hidden" name="croppedImage" ref={hiddenInputRef} />
+            <input type="hidden" name="croppedImage" />
             <DialogFooter className="mt-4 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
               <DialogClose asChild>
                 <Button variant="outline" type="button" className="w-full sm:w-auto">Cancel</Button>
               </DialogClose>
-              <div className="sm:mb-0 mb-2">
+              <div className="w-full sm:w-auto mb-2 sm:mb-0">
                 <CropSubmitButton />
               </div>
             </DialogFooter>
