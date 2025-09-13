@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Info, LogOut, ExternalLink, Menu, Wrench } from 'lucide-react';
+import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -31,6 +32,7 @@ const navItems = [
   { href: '/dashboard', label: 'Profile', icon: <User /> },
   { href: '/dashboard/about', label: 'About Section', icon: <Info /> },
   { href: '/dashboard/skills', label: 'Skills Section', icon: <Wrench /> },
+  { href: '/dashboard/projects', label: 'Projects Section', icon: <FolderKanban /> },
 ];
 
 function MobileNav() {
@@ -47,7 +49,7 @@ function MobileNav() {
                     <DropdownMenuItem key={item.label} asChild>
                         <Link href={item.href} className="flex items-center gap-2">
                             {item.icon}
-                            <span>{item.label}</span>
+                            <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
                         </Link>
                     </DropdownMenuItem>
                 ))}

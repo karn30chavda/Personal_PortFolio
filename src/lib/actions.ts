@@ -202,6 +202,48 @@ export async function updateSkillsData(prevState: any, formData: FormData) {
     }
   }
 
+const projectSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  imageUrl: z.string().min(1, 'Image URL is required'),
+  tags: z.string().min(1, 'Tags are required'),
+  liveUrl: z.string().url().optional().or(z.literal('')),
+  repoUrl: z.string().url().optional().or(z.literal('')),
+});
+
+const projectsFormSchema = z.array(projectSchema);
+
+export async function updateProjectsData(prevState: any, formData: FormData) {
+  try {
+    const projectsDataString = formData.get('projectsData') as string;
+    if (!projectsDataString) {
+      return { success: false, message: 'No projects data provided.' };
+    }
+
+    const projectsDataJSON = JSON.parse(projectsDataString);
+    const validatedFields = projectsFormSchema.safeParse(projectsDataJSON);
+
+    if (!validatedFields.success) {
+      console.log(validatedFields.error.flatten());
+      return {
+        success: false,
+        message: "Validation failed. Ensure all fields are filled correctly.",
+      };
+    }
+    
+    await setDoc(doc(db, "siteConfig", "projects"), { projectsData: validatedFields.data });
+
+    revalidatePath("/");
+    revalidatePath("/dashboard/projects");
+
+    return { success: true, message: "Projects section updated successfully!", data: JSON.stringify(validatedFields.data) };
+  } catch (error) {
+    console.error("Error updating projects data:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    return { success: false, message: `Failed to update projects: ${errorMessage}` };
+  }
+}
+
   type SiteData = {
     imageUrl: string;
     name: string;
@@ -213,6 +255,7 @@ export async function updateSkillsData(prevState: any, formData: FormData) {
       imageUrl: string;
     };
     skills: z.infer<typeof skillsFormSchema>;
+    projects: z.infer<typeof projectsFormSchema>;
   };
   
   export async function getSiteData(): Promise<SiteData> {
@@ -220,18 +263,21 @@ export async function updateSkillsData(prevState: any, formData: FormData) {
       const profileDocRef = doc(db, "siteConfig", "profile");
       const aboutDocRef = doc(db, "siteConfig", "about");
       const skillsDocRef = doc(db, "siteConfig", "skills");
+      const projectsDocRef = doc(db, "siteConfig", "projects");
   
       // Ensure documents exist
       await Promise.all([
           setDoc(profileDocRef, {}, { merge: true }),
           setDoc(aboutDocRef, {}, { merge: true }),
           setDoc(skillsDocRef, {}, { merge: true }),
+          setDoc(projectsDocRef, {}, { merge: true }),
       ]);
   
-      const [profileDocSnap, aboutDocSnap, skillsDocSnap] = await Promise.all([
+      const [profileDocSnap, aboutDocSnap, skillsDocSnap, projectsDocSnap] = await Promise.all([
         getDoc(profileDocRef),
         getDoc(aboutDocRef),
-        getDoc(skillsDocRef)
+        getDoc(skillsDocRef),
+        getDoc(projectsDocRef)
       ]);
   
       const profileData = profileDocSnap.data() || {};
@@ -239,6 +285,9 @@ export async function updateSkillsData(prevState: any, formData: FormData) {
       
       const skillsData = skillsDocSnap.data()?.skillsData;
       const finalSkills = skillsData && skillsData.length > 0 ? skillsData : defaultSkills;
+
+      const projectsData = projectsDocSnap.data()?.projectsData;
+      const finalProjects = projectsData && projectsData.length > 0 ? projectsData : defaultProjects;
 
       const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
 
@@ -257,6 +306,7 @@ When I'm not coding, you can find me exploring new technologies, contributing to
           imageUrl: aboutData.imageUrl || "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
         },
         skills: finalSkills,
+        projects: finalProjects,
       };
       
     } catch (error) {
@@ -311,6 +361,41 @@ When I'm not coding, you can find me exploring new technologies, contributing to
     },
   ];
 
+  const defaultProjects = [
+    {
+      title: 'PWA Calculator',
+      description: 'Progressive Web App with theme toggle and calculation history. Features offline functionality, splash screen, keyboard support, dark/light themes, and a lightweight design.',
+      imageUrl: '/images/calculator.jpg',
+      tags: 'PWA, JavaScript, HTML, CSS, Offline Support',
+      liveUrl: 'https://calcmate-calculate.netlify.app',
+      repoUrl: 'https://github.com/karn30chavda/CALCULATOR-PROJECT',
+    },
+    {
+      title: 'Designated Driver Service (DDS) Website',
+      description: 'Full-Stack Web App for booking professional drivers on-demand. Includes user/driver registration, role-based authentication, real-time booking, admin panel, driver background checks, responsive design, Firebase Hosting, and encrypted data storage.',
+      imageUrl: '/images/dds.jpg',
+      tags: 'Full-Stack, Firebase, JavaScript, Authentication, Real-time',
+      liveUrl: 'https://designated-driver-service.netlify.app',
+      repoUrl: 'https://github.com/karn30chavda/DRIVER-BOOKING-WEBSITE',
+    },
+    {
+      title: 'Sticky Notes PWA',
+      description: 'Secure Note-Taking App with rich text editing and PWA capabilities. Features PIN-protected notes, dark/light themes, real-time sync, profile picture upload, search/filter functionality, and responsive UI.',
+      imageUrl: '/images/stickynotes.jpg',
+      tags: 'Full-Stack, PWA, Security, Real-time Sync, JavaScript, Responsive UI',
+      liveUrl: 'https://stickynotesproject.netlify.app',
+      repoUrl: 'https://github.com/karn30chavda/STICKY-NOTE-PROJECT',
+    },
+    {
+      title: 'Tic Tac Win Game',
+      description: 'Offline-Ready Game with AI and multiplayer modes. Features a hand-drawn UI, responsive design, animated splash screen, PWA installation, and smooth animations.',
+      imageUrl: '/images/tictactoe.jpg',
+      tags: 'PWA, Game, AI, Multiplayer, JavaScript',
+      liveUrl: 'https://tictactoewinner.netlify.app',
+      repoUrl: 'https://github.com/karn30chavda/Tic-Tac-Toe-Game',
+    },
+  ];
+
   function getDefaultSiteData(): SiteData {
     const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
 
@@ -328,7 +413,8 @@ When I'm not coding, you can find me exploring new technologies, contributing to
         content: defaultAboutContent,
         imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       },
-      skills: defaultSkills
+      skills: defaultSkills,
+      projects: defaultProjects
     };
   }
 
