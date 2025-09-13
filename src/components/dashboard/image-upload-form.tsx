@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useActionState, useState, useRef, type ChangeEvent } from 'react';
+import { useActionState, useState, useRef, type ChangeEvent, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
@@ -83,6 +83,7 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isPending, startTransition] = useTransition();
 
   const onSelectFile = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -112,11 +113,11 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
         formData.set('croppedImage', dataUrl);
     }
     
-    // The actual action call
-    formAction(formData);
+    startTransition(() => {
+        formAction(formData);
+    });
 
     // This part runs after the action is initiated
-    // Note: State updates might not be immediate if the action causes a re-render
     setIsCropModalOpen(false);
     setImgSrc('');
     if (fileInputRef.current) {
@@ -204,4 +205,3 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
     </div>
   );
 }
-
