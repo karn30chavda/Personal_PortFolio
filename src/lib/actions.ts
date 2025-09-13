@@ -159,14 +159,14 @@ export async function updateAboutImage(prevState: any, formData: FormData) {
   }
 
 const skillSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1, 'Skill name is required'),
   iconName: z.string().optional(),
 });
 
 const skillCategorySchema = z.object({
-  category: z.string().min(1),
+  category: z.string().min(1, 'Category name is required'),
   categoryIconName: z.string().optional(),
-  skills: z.array(skillSchema).min(1),
+  skills: z.array(skillSchema).min(1, 'At least one skill is required'),
 });
 
 const skillsFormSchema = z.array(skillCategorySchema);
