@@ -47,8 +47,7 @@ const DialogContent = React.forwardRef<
       {children}
       {!hideCloseButton && (
         <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-          {/* The X icon is removed from here by default now. If a specific dialog needs it, it can be re-added or another solution found. */}
-          {/* For the resume dialog, we will rely on the footer "Close" button */}
+          <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       )}
@@ -124,3 +123,5 @@ export {
   DialogTitle,
   DialogDescription,
 }
+
+    
