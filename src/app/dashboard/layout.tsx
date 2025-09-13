@@ -25,6 +25,7 @@ import {
 import { logout } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ThemeToggleButton } from '@/components/theme-toggle-button';
 
 const navItems = [
   { href: '/dashboard', label: 'Profile', icon: <User /> },
@@ -77,60 +78,71 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const isMobile = useIsMobile();
 
+  if (isMobile === null) {
+    return <div className="h-screen w-full bg-background" />; // or a loading spinner
+  }
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
-        <Sidebar>
-          <SidebarHeader>
-            <Link href="/" className="text-xl font-bold text-primary font-headline group-data-[collapsible=icon]:hidden">
-              Karan Chavda
-            </Link>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                  <Link href={item.href} legacyBehavior passHref>
-                    <SidebarMenuButton
-                      isActive={pathname === item.href}
-                      tooltip={item.label}
-                    >
-                      {item.icon}
-                      <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                    </SidebarMenuButton>
+        {!isMobile && (
+          <Sidebar>
+            <SidebarHeader>
+              <Link href="/" className="text-xl font-bold text-primary font-headline group-data-[collapsible=icon]:hidden">
+                Karan Chavda
+              </Link>
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarMenu>
+                {navItems.map((item) => (
+                  <SidebarMenuItem key={item.label}>
+                    <Link href={item.href} legacyBehavior passHref>
+                      <SidebarMenuButton
+                        isActive={pathname === item.href}
+                        tooltip={item.label}
+                      >
+                        {item.icon}
+                        <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                      </SidebarMenuButton>
+                    </Link>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarContent>
+            <SidebarFooter>
+              <div className="flex flex-col gap-2">
+                  <Link href="/" target="_blank" legacyBehavior passHref>
+                      <Button variant="outline" className="w-full justify-start">
+                          <ExternalLink />
+                          <span className="group-data-[collapsible=icon]:hidden">Go to Site</span>
+                      </Button>
                   </Link>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarContent>
-          <SidebarFooter>
-            <div className="flex flex-col gap-2">
-                <Link href="/" target="_blank" legacyBehavior passHref>
-                    <Button variant="outline" className="w-full justify-start">
-                        <ExternalLink />
-                        <span className="group-data-[collapsible=icon]:hidden">Go to Site</span>
-                    </Button>
-                </Link>
-                <form action={logout}>
-                    <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-red-500/10 hover:text-red-500">
-                        <LogOut />
-                        <span className="group-data-[collapsible=icon]:hidden">Logout</span>
-                    </Button>
-                </form>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
+                  <form action={logout}>
+                      <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-red-500/10 hover:text-red-500">
+                          <LogOut />
+                          <span className="group-data-[collapsible=icon]:hidden">Logout</span>
+                      </Button>
+                  </form>
+              </div>
+            </SidebarFooter>
+          </Sidebar>
+        )}
         <div className="flex-1 flex flex-col">
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
-            {isMobile ? (
-                <Link href="/" className="text-xl font-bold text-primary font-headline">
-                    Karan Chavda
-                </Link>
-            ) : (
-                <SidebarTrigger />
-            )}
+            <div className='flex items-center gap-2'>
+              {isMobile ? (
+                  <Link href="/" className="text-xl font-bold text-primary font-headline">
+                      Karan Chavda
+                  </Link>
+              ) : (
+                  <SidebarTrigger />
+              )}
+            </div>
             
-            {isMobile && <MobileNav />}
+            <div className="flex items-center gap-2">
+              <ThemeToggleButton />
+              {isMobile && <MobileNav />}
+            </div>
           </header>
           <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
             {children}
