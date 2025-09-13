@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useFieldArray, useForm, Controller } from 'react-hook-form';
@@ -7,6 +6,7 @@ import { z } from 'zod';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -98,21 +98,39 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {fields.map((categoryItem, categoryIndex) => (
-          <div key={categoryItem.id} className="p-6 rounded-lg border bg-card/50 space-y-4">
-            <div className="flex justify-between items-start">
-              <FormField
-                control={form.control}
-                name={`skillsData.${categoryIndex}.category`}
-                render={({ field }) => (
-                  <FormItem className="w-full mr-4">
-                    <FormLabel className="text-lg font-semibold">Category Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Core Languages" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <div key={categoryItem.id} className="p-6 rounded-lg border bg-card/50 space-y-6">
+            <div className="flex justify-between items-start gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
+                <FormField
+                  control={form.control}
+                  name={`skillsData.${categoryIndex}.category`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Core Languages" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name={`skillsData.${categoryIndex}.categoryIconName`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category Icon Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Code2" {...field} />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        Find icon names on lucide.dev. Examples: Layers, DatabaseZap, Wrench.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <Button
                 type="button"
                 variant="destructive"
@@ -133,7 +151,7 @@ export function SkillsForm({ currentSkills }: { currentSkills: SkillsFormValues[
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ category: '', skills: [{ name: '' }] })}
+            onClick={() => append({ category: '', categoryIconName: '', skills: [{ name: '' }] })}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Category
@@ -154,7 +172,7 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
   
     return (
       <div className="pl-4 border-l-2 border-border ml-2 space-y-4">
-        <h4 className="font-medium">Skills</h4>
+        <h4 className="font-medium text-sm text-muted-foreground">Skills</h4>
         {fields.map((skillItem, skillIndex) => (
           <div key={skillItem.id} className="flex items-center gap-2">
             <Controller
@@ -187,4 +205,3 @@ function SkillsFieldArray({ categoryIndex, control }: { categoryIndex: number, c
       </div>
     );
   }
-
