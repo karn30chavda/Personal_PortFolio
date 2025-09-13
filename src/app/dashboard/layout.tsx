@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, User, Info, LogOut, ExternalLink } from 'lucide-react';
+import { User, Info, LogOut, ExternalLink } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
