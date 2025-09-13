@@ -30,8 +30,6 @@ type SidebarContext = {
   state: "expanded" | "collapsed"
   isMobile: boolean | null
   toggleSidebar: () => void
-  isSheetOpen: boolean;
-  setSheetOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -58,16 +56,21 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
-    const isMobile = useIsMobile()
+    const isMobile = useIsMobile();
+    const [isMounted, setIsMounted] = React.useState(false);
     const [open, setOpen] = React.useState(true);
-    const [isSheetOpen, setSheetOpen] = React.useState(false);
 
     React.useEffect(() => {
-        if (isMobile === null) return;
-        const cookieValue = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
-        const initialOpen = cookieValue ? cookieValue.split('=')[1] === 'true' : true;
-        setOpen(initialOpen);
-    }, [isMobile]);
+        setIsMounted(true);
+    }, []);
+
+    React.useEffect(() => {
+        if (isMounted && isMobile !== null) {
+            const cookieValue = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
+            const initialOpen = cookieValue ? cookieValue.split('=')[1] === 'true' : true;
+            setOpen(initialOpen);
+        }
+    }, [isMounted, isMobile]);
 
     const toggleSidebar = React.useCallback(() => {
         setOpen((prev) => {
@@ -102,11 +105,13 @@ const SidebarProvider = React.forwardRef<
         state,
         isMobile,
         toggleSidebar,
-        isSheetOpen,
-        setSheetOpen,
       }),
-      [state, isMobile, toggleSidebar, isSheetOpen, setSheetOpen]
+      [state, isMobile, toggleSidebar]
     )
+
+    if (!isMounted) {
+      return null;
+    }
 
     return (
       <SidebarContext.Provider value={contextValue}>
@@ -142,33 +147,30 @@ const Sidebar = React.forwardRef<
   React.ComponentProps<"div"> & {
     side?: "left" | "right"
     variant?: "sidebar" | "floating" | "inset"
-    collapsible?: "icon" | "none"
   }
 >(
   (
     {
       side = "left",
       variant = "sidebar",
-      collapsible = "icon",
       className,
       children,
       ...props
     },
     ref
   ) => {
-    const { state, isMobile, isSheetOpen, setSheetOpen } = useSidebar();
+    const { state } = useSidebar();
     
     return (
       <div
             ref={ref}
             data-state={state}
-            data-collapsible={collapsible}
             data-variant={variant}
             data-side={side}
             className={cn(
                 "group text-sidebar-foreground transition-all duration-300 ease-in-out",
                 "flex flex-col bg-sidebar-background border-r border-sidebar-border",
-                "data-[state=expanded]:w-[var(--sidebar-width)] data-[collapsible=icon]:data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
+                "data-[state=expanded]:w-[var(--sidebar-width)] data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
                 className
             )}
             {...props}
@@ -185,7 +187,7 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar, isMobile, setSheetOpen } = useSidebar()
+  const { toggleSidebar } = useSidebar()
 
   return (
     <Button
@@ -196,11 +198,7 @@ const SidebarTrigger = React.forwardRef<
       className={cn("h-8 w-8", className)}
       onClick={(event) => {
         onClick?.(event)
-        if (isMobile) {
-          setSheetOpen(true);
-        } else {
-          toggleSidebar()
-        }
+        toggleSidebar()
       }}
       {...props}
     >
@@ -215,13 +213,13 @@ const SidebarHeader = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
-  const { state, isMobile } = useSidebar();
+  const { state } = useSidebar();
   return (
     <div
       ref={ref}
       data-sidebar="header"
       className={cn("flex flex-col p-4 h-16 items-center justify-center", 
-        state === 'collapsed' && !isMobile && 'p-2',
+        state === 'collapsed' && 'p-2',
         className
       )}
       {...props}
@@ -234,13 +232,13 @@ const SidebarFooter = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
-  const { state, isMobile } = useSidebar();
+  const { state } = useSidebar();
   return (
     <div
       ref={ref}
       data-sidebar="footer"
       className={cn("flex flex-col gap-2 p-4 mt-auto", 
-        state === 'collapsed' && !isMobile && 'p-2',
+        state === 'collapsed' && 'p-2',
         className
       )}
       {...props}
@@ -268,14 +266,14 @@ const SidebarContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
-  const { state, isMobile } = useSidebar();
+  const { state } = useSidebar();
   return (
     <div
       ref={ref}
       data-sidebar="content"
       className={cn(
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-4",
-        state === 'collapsed' && !isMobile && 'p-2',
+        state === 'collapsed' && 'p-2',
         className
       )}
       {...props}
@@ -354,7 +352,7 @@ const SidebarMenuButton = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { state, isMobile } = useSidebar()
+    const { state } = useSidebar()
 
     const button = (
       <Comp
@@ -363,7 +361,7 @@ const SidebarMenuButton = React.forwardRef<
         data-size={size}
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), 
-          state === 'collapsed' && !isMobile && 'justify-center',
+          state === 'collapsed' && 'justify-center',
           className
         )}
         {...props}
@@ -384,7 +382,7 @@ const SidebarMenuButton = React.forwardRef<
         <TooltipContent
           side="right"
           align="center"
-          hidden={state !== "collapsed" || isMobile === true}
+          hidden={state !== "collapsed"}
           {...tooltipContent}
         />
       </Tooltip>

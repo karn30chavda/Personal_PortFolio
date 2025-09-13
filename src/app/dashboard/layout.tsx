@@ -88,7 +88,7 @@ export default function DashboardLayout({
         {!isMobile && (
           <Sidebar>
             <SidebarHeader>
-              <Link href="/" className="text-xl font-bold text-primary font-headline group-data-[collapsible=icon]:hidden">
+              <Link href="/" className="text-xl font-bold text-primary font-headline group-data-[state=collapsed]:hidden">
                 Karan Chavda
               </Link>
             </SidebarHeader>
@@ -102,7 +102,7 @@ export default function DashboardLayout({
                         tooltip={item.label}
                       >
                         {item.icon}
-                        <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                        <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
                       </SidebarMenuButton>
                     </Link>
                   </SidebarMenuItem>
@@ -114,13 +114,13 @@ export default function DashboardLayout({
                   <Link href="/" target="_blank" legacyBehavior passHref>
                       <Button variant="outline" className="w-full justify-start">
                           <ExternalLink />
-                          <span className="group-data-[collapsible=icon]:hidden">Go to Site</span>
+                          <span className="group-data-[state=collapsed]:hidden">Go to Site</span>
                       </Button>
                   </Link>
                   <form action={logout}>
                       <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-red-500/10 hover:text-red-500">
                           <LogOut />
-                          <span className="group-data-[collapsible=icon]:hidden">Logout</span>
+                          <span className="group-data-[state=collapsed]:hidden">Logout</span>
                       </Button>
                   </form>
               </div>
