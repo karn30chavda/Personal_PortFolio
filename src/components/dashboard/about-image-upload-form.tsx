@@ -56,29 +56,27 @@ export function AboutImageUploadForm({ currentImageUrl }: { currentImageUrl: str
   const displayImageUrl = previewUrl || currentImageUrl;
 
   return (
-    <form action={handleFormAction} className="flex flex-col h-full">
-      <div className="flex-grow space-y-6">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-full aspect-video relative rounded-lg overflow-hidden border-4 border-border shadow-md shrink-0">
-            <Image
-              src={displayImageUrl}
-              alt="Current about section image"
-              fill
-              className="object-cover"
+    <form action={handleFormAction} className="space-y-6">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-full aspect-video relative rounded-lg overflow-hidden border-4 border-border shadow-md shrink-0">
+          <Image
+            src={displayImageUrl}
+            alt="Current about section image"
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="w-full">
+            <Label htmlFor="about-image-upload" className="sr-only">Choose a new image</Label>
+            <Input
+              id="about-image-upload"
+              name="image"
+              type="file"
+              accept="image/*"
+              onChange={onSelectFile}
+              ref={fileInputRef}
+              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
             />
-          </div>
-          <div className="w-full">
-              <Label htmlFor="about-image-upload" className="sr-only">Choose a new image</Label>
-              <Input
-                id="about-image-upload"
-                name="image"
-                type="file"
-                accept="image/*"
-                onChange={onSelectFile}
-                ref={fileInputRef}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-              />
-          </div>
         </div>
       </div>
       <div className="mt-auto pt-6">

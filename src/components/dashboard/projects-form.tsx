@@ -229,37 +229,35 @@ export function ProjectsForm({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name={`projectsData.${index}.liveUrl`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Live URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`projectsData.${index}.repoUrl`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Repo URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://github.com/user/repo"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name={`projectsData.${index}.liveUrl`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Live URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`projectsData.${index}.repoUrl`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Repo URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="https://github.com/user/repo"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         ))}
 

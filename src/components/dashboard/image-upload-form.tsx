@@ -73,29 +73,27 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
   const displayImageUrl = previewUrl || currentImageUrl;
 
   return (
-    <form action={handleFormAction} className="flex flex-col h-full">
-      <div className="flex-grow space-y-6">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-border shadow-md shrink-0">
-            <Image
-              src={displayImageUrl}
-              alt="Profile picture preview"
-              fill
-              className="object-cover"
+    <form action={handleFormAction} className="space-y-6">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-border shadow-md shrink-0">
+          <Image
+            src={displayImageUrl}
+            alt="Profile picture preview"
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="w-full">
+            <Label htmlFor="image-upload" className="sr-only">Choose a new profile image</Label>
+            <Input
+              id="image-upload"
+              name="image"
+              type="file"
+              accept="image/*"
+              onChange={onSelectFile}
+              ref={fileInputRef}
+              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
             />
-          </div>
-          <div className="w-full">
-              <Label htmlFor="image-upload" className="sr-only">Choose a new profile image</Label>
-              <Input
-                id="image-upload"
-                name="image"
-                type="file"
-                accept="image/*"
-                onChange={onSelectFile}
-                ref={fileInputRef}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-              />
-          </div>
         </div>
       </div>
       <div className="mt-auto pt-6">

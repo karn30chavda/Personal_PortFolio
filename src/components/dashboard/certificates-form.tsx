@@ -209,37 +209,35 @@ export function CertificatesForm({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name={`certificatesData.${index}.date`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., October 2023" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`certificatesData.${index}.credentialUrl`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Credential URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://example.com/credential"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name={`certificatesData.${index}.date`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., October 2023" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`certificatesData.${index}.credentialUrl`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Credential URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="https://example.com/credential"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         ))}
 
