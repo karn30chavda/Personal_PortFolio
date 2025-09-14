@@ -139,130 +139,126 @@ export function ProjectsForm({
               <Trash className="h-4 w-4" />
               <span className="sr-only">Remove Project</span>
             </Button>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1 space-y-2">
-                <FormLabel>Project Image</FormLabel>
-                <div className="relative w-full aspect-video rounded-md overflow-hidden border">
-                  <Image
-                    src={
-                      imagePreviews[index] ||
-                      form.watch(`projectsData.${index}.imageUrl`) ||
-                      'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project'
-                    }
-                    alt="Project image"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name={`projectsData.${index}.imageFile` as any}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="sr-only">Image File</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onBlur={field.onBlur}
-                          name={field.name}
-                          ref={field.ref}
-                          onChange={(e) => {
-                            field.onChange(e.target.files)
-                            handleImageChange(e, index)
-                          }}
-                          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+            
+            <div className="flex flex-col items-center gap-4">
+              <FormLabel>Project Image</FormLabel>
+              <div className="relative w-full aspect-video rounded-md overflow-hidden border">
+                <Image
+                  src={
+                    imagePreviews[index] ||
+                    form.watch(`projectsData.${index}.imageUrl`) ||
+                    'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project'
+                  }
+                  alt="Project image"
+                  fill
+                  className="object-cover"
                 />
               </div>
+              <FormField
+                control={form.control}
+                name={`projectsData.${index}.imageFile` as any}
+                render={({ field }) => (
+                  <FormItem className='w-full'>
+                    <FormLabel className="sr-only">Image File</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                        onChange={(e) => {
+                          field.onChange(e.target.files)
+                          handleImageChange(e, index)
+                        }}
+                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-              <div className="md:col-span-2 space-y-4">
-                <FormField
-                  control={form.control}
-                  name={`projectsData.${index}.title`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project Title</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., PWA Calculator"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`projectsData.${index}.description`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Describe the project"
-                          {...field}
-                          className="min-h-[100px]"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`projectsData.${index}.tags`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tags</FormLabel>
-                      <FormControl>
-                        <Input placeholder="PWA, JavaScript, HTML" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Comma-separated list of tags.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name={`projectsData.${index}.liveUrl`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Live URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`projectsData.${index}.repoUrl`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Repo URL</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="https://github.com/user/repo"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+            <FormField
+              control={form.control}
+              name={`projectsData.${index}.title`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., PWA Calculator"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`projectsData.${index}.description`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe the project"
+                      {...field}
+                      className="min-h-[100px]"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`projectsData.${index}.tags`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <FormControl>
+                    <Input placeholder="PWA, JavaScript, HTML" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Comma-separated list of tags.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name={`projectsData.${index}.liveUrl`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Live URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`projectsData.${index}.repoUrl`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Repo URL</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://github.com/user/repo"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
         ))}

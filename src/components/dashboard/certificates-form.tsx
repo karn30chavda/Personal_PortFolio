@@ -136,9 +136,8 @@ export function CertificatesForm({
               <Trash className="h-4 w-4" />
               <span className="sr-only">Remove Certificate</span>
             </Button>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1 space-y-2">
+            
+            <div className="flex flex-col items-center gap-4">
                 <FormLabel>Certificate Image</FormLabel>
                 <div className="relative w-full aspect-video rounded-md overflow-hidden border">
                   <Image
@@ -156,7 +155,7 @@ export function CertificatesForm({
                   control={form.control}
                   name={`certificatesData.${index}.imageFile` as any} 
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className='w-full'>
                       <FormLabel className="sr-only">Image File</FormLabel>
                       <FormControl>
                         <Input
@@ -176,72 +175,70 @@ export function CertificatesForm({
                     </FormItem>
                   )}
                 />
-              </div>
-              <div className="md:col-span-2 space-y-4">
-                <FormField
-                  control={form.control}
-                  name={`certificatesData.${index}.title`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Certificate Title</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., AWS Certified Cloud Practitioner"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`certificatesData.${index}.issuer`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Issuer</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., Amazon Web Services"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name={`certificatesData.${index}.date`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Date</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., October 2023" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`certificatesData.${index}.credentialUrl`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Credential URL</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="https://example.com/credential"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+            </div>
+            
+            <FormField
+              control={form.control}
+              name={`certificatesData.${index}.title`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Certificate Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., AWS Certified Cloud Practitioner"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`certificatesData.${index}.issuer`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Issuer</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., Amazon Web Services"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name={`certificatesData.${index}.date`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., October 2023" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`certificatesData.${index}.credentialUrl`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Credential URL</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://example.com/credential"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
         ))}
