@@ -15,8 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash, Loader2 } from 'lucide-react';
-import { useActionState, useEffect, useState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect, useState, useTransition } from 'react';
 import { updateProjectsData } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '../ui/textarea';
@@ -42,7 +41,7 @@ export function ProjectsForm({
 }: {
   currentProjects: ProjectsFormValues['projectsData'];
 }) {
-  const { pending } = useFormStatus();
+  const [isPending, startTransition] = useTransition();
   const form = useForm<ProjectsFormValues>({
     resolver: zodResolver(projectsFormSchema),
     defaultValues: {
@@ -106,18 +105,19 @@ export function ProjectsForm({
   };
 
   const handleFormAction = (formData: FormData) => {
-    const data = form.getValues();
-    formData.append('projectsData', JSON.stringify(data.projectsData));
+    startTransition(() => {
+        const data = form.getValues();
+        formData.append('projectsData', JSON.stringify(data.projectsData));
 
-    // Manually append files to formData for the server action
-    data.projectsData.forEach((_, index) => {
-      const fileInput = document.querySelector<HTMLInputElement>(`input[name="image_${index}"]`);
-      if (fileInput?.files?.[0]) {
-        formData.append(`image_${index}`, fileInput.files[0]);
-      }
+        data.projectsData.forEach((_, index) => {
+        const fileInput = document.querySelector<HTMLInputElement>(`input[name="image_${index}"]`);
+        if (fileInput?.files?.[0]) {
+            formData.append(`image_${index}`, fileInput.files[0]);
+        }
+        });
+        
+        formAction(formData);
     });
-    
-    formAction(formData);
   };
 
   return (
@@ -284,8 +284,8 @@ export function ProjectsForm({
             <Plus className="mr-2 h-4 w-4" />
             Add Project
           </Button>
-          <Button type="submit" disabled={pending}>
-            {pending ? (
+          <Button type="submit" disabled={isPending}>
+            {isPending ? (
               <>
                 <Loader2 className="animate-spin mr-2" />
                 Saving...
