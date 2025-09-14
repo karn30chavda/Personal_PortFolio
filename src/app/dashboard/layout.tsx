@@ -2,6 +2,7 @@
 "use client";
 
 import Link from 'next/link';
+import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award, Mail, Loader2 } from 'lucide-react';
 import {
@@ -121,7 +122,7 @@ function MobileNav({
                     </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem>
                     <form action={logout} className="w-full">
                         <button type="submit" className="w-full flex items-center text-red-500 hover:text-red-500/90 gap-2">
                             <LogOut className="mr-2 h-4 w-4" />
