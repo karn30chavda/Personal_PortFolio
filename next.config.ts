@@ -34,12 +34,6 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: '6000-firebase-studio-*.cluster-*.cloudworkstations.dev',
-        port: '',
-        pathname: '/**',
-      }
     ],
   },
   env: {
