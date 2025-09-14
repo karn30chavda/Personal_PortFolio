@@ -1,4 +1,6 @@
 
+"use server";
+
 import "server-only";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
