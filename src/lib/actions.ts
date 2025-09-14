@@ -515,7 +515,7 @@ When I'm not coding, you can find me exploring new technologies, contributing to
         imageUrl: profileData.imageUrl || '/images/karanprofile.jpg',
         name: profileData.name || 'Karan Chavda',
         title: profileData.title || 'Creative Web Developer & UI/UX Enthusiast',
-        bio: profileData.bio || 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
+        bio: profileData.bio || 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\\'s create something amazing together.',
         resumeUrl: '/karanresume.pdf',
         about: {
           content: aboutData.content || defaultAboutContent,
@@ -641,7 +641,7 @@ When I'm not coding, you can find me exploring new technologies, contributing to
       imageUrl: '/images/karanprofile.jpg',
       name: 'Karan Chavda',
       title: 'Creative Web Developer & UI/UX Enthusiast',
-      bio: 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
+      bio: 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\\'s create something amazing together.',
       resumeUrl: '/karanresume.pdf',
       about: {
         content: defaultAboutContent,
