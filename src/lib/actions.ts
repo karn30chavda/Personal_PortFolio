@@ -1,4 +1,3 @@
-
 "use server";
 
 import { redirect } from "next/navigation";
@@ -522,5 +521,42 @@ export async function getProfileData() {
         bio: data.bio,
         resumeUrl: data.resumeUrl,
         about: data.about
+    }
+}
+
+export type ContactSubmission = {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    submittedAt: string;
+};
+
+export async function getContactSubmissions(): Promise<ContactSubmission[]> {
+    try {
+        const submissionsCol = collection(db, "contactSubmissions");
+        const q = query(submissionsCol, orderBy("submittedAt", "desc"));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            return [];
+        }
+
+        const submissions = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                name: data.name,
+                email: data.email,
+                message: data.message,
+                // Firestore Timestamps need to be converted to a serializable format
+                submittedAt: data.submittedAt.toDate().toISOString(), 
+            }
+        });
+
+        return submissions;
+    } catch (error) {
+        console.error("Error fetching contact submissions:", error);
+        return [];
     }
 }

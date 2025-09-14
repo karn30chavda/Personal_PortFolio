@@ -1,9 +1,8 @@
-
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { db } from "./firebase";
-import { collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { z } from "zod";
 
 const ContactFormSchema = z.object({
@@ -42,41 +41,4 @@ export async function saveContactMessage(prevState: any, formData: FormData) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     return { success: false, message: `Failed to send message: ${errorMessage}` };
   }
-}
-
-export type ContactSubmission = {
-    id: string;
-    name: string;
-    email: string;
-    message: string;
-    submittedAt: string;
-};
-
-export async function getContactSubmissions(): Promise<ContactSubmission[]> {
-    try {
-        const submissionsCol = collection(db, "contactSubmissions");
-        const q = query(submissionsCol, orderBy("submittedAt", "desc"));
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
-            return [];
-        }
-
-        const submissions = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                name: data.name,
-                email: data.email,
-                message: data.message,
-                // Firestore Timestamps need to be converted to a serializable format
-                submittedAt: data.submittedAt.toDate().toISOString(), 
-            }
-        });
-
-        return submissions;
-    } catch (error) {
-        console.error("Error fetching contact submissions:", error);
-        return [];
-    }
 }
