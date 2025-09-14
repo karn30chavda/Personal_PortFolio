@@ -14,27 +14,27 @@ export default function HomePage() {
     <div className="flex flex-col items-center">
       <HeroSection />
       <div className="w-full max-w-5xl px-4">
-        <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
+        <Separator className="my-8 md:my-12" />
       </div>
       <AboutSection />
       <div className="w-full max-w-5xl px-4">
-        <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
+        <Separator className="my-8 md:my-12" />
       </div>
       <ExperienceSection />
       <div className="w-full max-w-5xl px-4">
-        <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
+        <Separator className="my-8 md:my-12" />
       </div>
       <SkillsSection />
       <div className="w-full max-w-5xl px-4">
-        <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
+        <Separator className="my-8 md:my-12" />
       </div>
       <CertificatesSection />
       <div className="w-full max-w-5xl px-4">
-        <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
+        <Separator className="my-8 md:my-12" />
       </div>
       <ProjectsSection />
       <div className="w-full max-w-5xl px-4">
-        <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
+        <Separator className="my-8 md:my-12" />
       </div>
       <ContactSection />
       <SiteFooter />
