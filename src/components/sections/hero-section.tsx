@@ -24,9 +24,9 @@ export async function HeroSection() {
       className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center text-center !py-0 mx-auto"
       animationDelay={0}
     >
-      <div className="absolute top-0 left-0 -z-10 h-full w-full">
-        <div className="absolute top-1/2 left-1/4 h-[50vw] w-[50vw] -translate-x-1/2 -translate-y-1/2 animate-float-bubble-1 rounded-full border-2 border-primary/60 bg-primary/30 blur-3xl dark:border-primary/50 dark:bg-primary/25 sm:h-[40vw] sm:w-[40vw]"></div>
-        <div className="absolute top-1/4 right-1/4 h-[45vw] w-[45vw] translate-x-1/4 -translate-y-1/4 animate-float-bubble-2 rounded-full border-2 border-accent/60 bg-accent/30 blur-3xl dark:border-accent/50 dark:bg-accent/25 sm:h-[35vw] sm:w-[35vw]"></div>
+      <div className="absolute top-0 left-0 -z-10 h-full w-full overflow-hidden">
+        <div className="absolute top-1/2 left-1/4 h-[50vw] w-[50vw] -translate-x-1/2 -translate-y-1/2 animate-float-bubble-1 rounded-full border-2 border-primary/20 bg-primary/10 blur-3xl dark:border-primary/20 dark:bg-primary/10 sm:h-[40vw] sm:w-[40vw]"></div>
+        <div className="absolute top-1/4 right-1/4 h-[45vw] w-[45vw] translate-x-1/4 -translate-y-1/4 animate-float-bubble-2 rounded-full border-2 border-accent/20 bg-accent/10 blur-3xl dark:border-accent/20 dark:bg-accent/10 sm:h-[35vw] sm:w-[35vw]"></div>
       </div>
       <div className="relative z-10 space-y-6 mt-16">
         <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full overflow-hidden shadow-lg border-4 border-border opacity-0 fade-in-load fade-in-delay-0">
