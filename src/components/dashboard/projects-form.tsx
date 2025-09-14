@@ -20,6 +20,7 @@ import { updateProjectsData } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '../ui/textarea';
 import Image from 'next/image';
+import { Separator } from '../ui/separator';
 
 const projectSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -107,10 +108,10 @@ export function ProjectsForm({
       const formData = new FormData();
       formData.append('projectsData', JSON.stringify(data.projectsData));
 
-      data.projectsData.forEach((_, index) => {
-        const fileInput = document.querySelector<HTMLInputElement>(
-          `input[name="projectsData.${index}.imageFile"]`
-        );
+      fields.forEach((_, index) => {
+        const fileInput = (document.querySelector(
+          `input[name='projectsData[${index}].imageFile']`
+        ) as HTMLInputElement);
         if (fileInput?.files?.[0]) {
           formData.append(`image_${index}`, fileInput.files[0]);
         }
@@ -125,145 +126,147 @@ export function ProjectsForm({
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8">
         {fields.map((projectItem, index) => (
           <div key={projectItem.id} className="p-4 md:p-6 rounded-lg border bg-card/50">
-             <div className="flex justify-between items-start gap-4">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 flex-grow">
-                  {/* Left column for image */}
-                  <div className="space-y-4 lg:col-span-1">
-                      <FormLabel>Project Image</FormLabel>
-                      <div className="relative w-full aspect-video rounded-md overflow-hidden border">
-                        <Image
-                          src={
-                            imagePreviews[index] ||
-                            form.watch(`projectsData.${index}.imageUrl`) ||
-                            'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project'
-                          }
-                          alt="Project image"
-                          fill
-                          className="object-cover"
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 flex-grow">
+              {/* Left column for image */}
+              <div className="space-y-4 lg:col-span-1">
+                  <FormLabel>Project Image</FormLabel>
+                  <div className="relative w-full aspect-video rounded-md overflow-hidden border">
+                    <Image
+                      src={
+                        imagePreviews[index] ||
+                        form.watch(`projectsData.${index}.imageUrl`) ||
+                        'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project'
+                      }
+                      alt="Project image"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name={`projectsData.${index}.imageFile` as any}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="sr-only">Image File</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                            onChange={(e) => {
+                              field.onChange(e.target.files)
+                              handleImageChange(e, index)
+                            }}
+                            className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold 
+                            file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+              </div>
+
+              {/* Right column for inputs */}
+              <div className="space-y-6 lg:col-span-2">
+                <FormField
+                  control={form.control}
+                  name={`projectsData.${index}.title`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Title</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., PWA Calculator"
+                          {...field}
                         />
-                      </div>
-                      <FormField
-                        control={form.control}
-                        name={`projectsData.${index}.imageFile` as any}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="sr-only">Image File</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                onBlur={field.onBlur}
-                                name={field.name}
-                                ref={field.ref}
-                                onChange={(e) => {
-                                  field.onChange(e.target.files)
-                                  handleImageChange(e, index)
-                                }}
-                                className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold 
-                                file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                  </div>
-
-                  {/* Right column for inputs */}
-                  <div className="space-y-6 lg:col-span-2">
-                    <FormField
-                      control={form.control}
-                      name={`projectsData.${index}.title`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Project Title</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., PWA Calculator"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`projectsData.${index}.description`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Describe the project"
-                              {...field}
-                              className="min-h-[100px]"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`projectsData.${index}.tags`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tags</FormLabel>
-                          <FormControl>
-                            <Input placeholder="PWA, JavaScript, HTML" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Comma-separated list of tags.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name={`projectsData.${index}.liveUrl`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Live URL</FormLabel>
-                            <FormControl>
-                              <Input placeholder="https://example.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`projectsData.${index}.repoUrl`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Repo URL</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="https://github.com/user/repo"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`projectsData.${index}.description`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Describe the project"
+                          {...field}
+                          className="min-h-[100px]"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`projectsData.${index}.tags`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags</FormLabel>
+                      <FormControl>
+                        <Input placeholder="PWA, JavaScript, HTML" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Comma-separated list of tags.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`projectsData.${index}.liveUrl`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Live URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`projectsData.${index}.repoUrl`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Repo URL</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://github.com/user/repo"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => remove(index)}
-                  className="shrink-0"
-                >
-                  <Trash className="h-4 w-4" />
-                  <span className="sr-only">Remove Project</span>
-                </Button>
+              </div>
+            </div>
+            
+            <Separator className="my-4" />
+            
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={() => remove(index)}
+                className="shrink-0"
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                Remove Project
+              </Button>
             </div>
           </div>
         ))}
