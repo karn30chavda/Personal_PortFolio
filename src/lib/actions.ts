@@ -1,3 +1,4 @@
+
 "use server";
 
 import { redirect } from "next/navigation";
@@ -493,9 +494,13 @@ type SiteData = {
 };
 
 async function getDocumentData(docRef: any, fallbackData: any) {
-  await setDoc(docRef, {}, { merge: true });
   const docSnap = await getDoc(docRef);
-  return docSnap.data() || fallbackData;
+  if (docSnap.exists()) {
+    return docSnap.data();
+  } else {
+    // If the document doesn't exist, create it with the fallback data
+    return fallbackData;
+  }
 }
 
 export async function getSiteData(): Promise<SiteData> {
@@ -607,3 +612,5 @@ export async function getContactSubmissions(): Promise<ContactSubmission[]> {
         return [];
     }
 }
+
+    
