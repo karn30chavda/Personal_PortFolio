@@ -21,7 +21,7 @@ export async function HeroSection() {
   return (
     <SectionWrapper
       id="hero"
-      className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center text-center !py-0 -mb-24"
+      className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center text-center !py-0"
       animationDelay={0}
     >
       <div className="absolute top-0 left-0 -z-10 h-full w-full">
