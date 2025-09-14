@@ -8,7 +8,7 @@ export default async function DashboardPage() {
   const profileData = await getProfileData();
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
       <div className="text-left">
         <h1 className="text-3xl font-bold tracking-tight">
           Edit Profile & Hero Section
