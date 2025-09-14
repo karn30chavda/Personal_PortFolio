@@ -2,9 +2,9 @@
 "use client";
 
 import Link from 'next/link';
-import * as React from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award, Mail } from 'lucide-react';
+import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award, Mail, Loader2 } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -27,7 +27,7 @@ import { logout } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggleButton } from '@/components/theme-toggle-button';
-import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Profile', icon: <User /> },
@@ -41,6 +41,7 @@ const navItems = [
 function MobileNav() {
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
+
     return (
         <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
@@ -49,7 +50,7 @@ function MobileNav() {
                     <span className="sr-only">Open Menu</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
                 {navItems.map((item) => (
                     <DropdownMenuItem key={item.label} asChild onClick={() => setOpen(false)}>
                         <Link href={item.href} className={`flex items-center w-full ${pathname === item.href ? 'font-semibold text-primary' : ''}`}>
@@ -112,7 +113,7 @@ export default function DashboardLayout({
               <SidebarMenu>
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.label}>
-                    <Link href={item.href} legacyBehavior passHref>
+                     <Link href={item.href} legacyBehavior passHref>
                       <SidebarMenuButton
                         isActive={pathname === item.href}
                         tooltip={item.label}
@@ -166,7 +167,7 @@ export default function DashboardLayout({
 
 function DashboardLoading() {
     return (
-        <div className="max-w-6xl mx-auto px-2 sm:px-4 py-8 space-y-10 animate-pulse">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 animate-pulse">
             <div className="text-center lg:text-left space-y-2">
                 <div className="h-10 bg-muted rounded w-1/2 mx-auto lg:mx-0"></div>
                 <div className="h-5 bg-muted rounded w-3/4 mx-auto lg:mx-0"></div>
