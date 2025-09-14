@@ -9,8 +9,6 @@ import { Separator } from '@/components/ui/separator';
 import { CertificatesSection } from '@/components/sections/certificates-section';
 
 export default function HomePage() {
-  const currentYear = new Date().getFullYear();
-
   return (
     <div className="flex flex-col items-center">
       <HeroSection />
@@ -40,7 +38,7 @@ export default function HomePage() {
       <ContactSection />
        <footer className="w-full py-8 mt-0 border-t border-border/40">
         <div className="container text-center text-sm text-muted-foreground space-y-1">
-          <p>&copy; {currentYear} Karan Chavda. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Karan Chavda. All rights reserved.</p>
           <p>Built with Next.js, Tailwind CSS, and Shadcn/UI.</p>
         </div>
       </footer>
