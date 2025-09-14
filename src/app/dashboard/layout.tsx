@@ -42,7 +42,8 @@ function NavButtonLink({
   href,
   label,
   icon,
-  isActive,
+  currentPath,
+  targetPath,
   isNavigating,
   onClick,
   isMobile = false,
@@ -50,16 +51,19 @@ function NavButtonLink({
   href: string;
   label: string;
   icon: React.ReactNode;
-  isActive: boolean;
+  currentPath: string;
+  targetPath: string;
   isNavigating: boolean;
   onClick: () => void;
   isMobile?: boolean;
 }) {
-  const isTarget = isNavigating && isActive;
+  const isActive = currentPath === href;
+  const isTarget = isNavigating && targetPath === href;
+  const isDisabled = isNavigating && !isTarget;
 
   if (isMobile) {
     return (
-      <Link href={href} onClick={onClick} className={cn("flex items-center gap-2 w-full", (isNavigating && !isTarget) && "opacity-50 pointer-events-none")}>
+      <Link href={href} onClick={onClick} className={cn("flex items-center gap-2 w-full", isDisabled && "opacity-50 pointer-events-none")}>
         {isTarget ? <Loader2 className="animate-spin" /> : icon}
         <span>{label}</span>
       </Link>
@@ -72,8 +76,8 @@ function NavButtonLink({
         isActive={isActive}
         tooltip={label}
         onClick={onClick}
-        disabled={isNavigating && !isTarget}
-        className={cn((isNavigating && !isTarget) && "opacity-50 pointer-events-none")}
+        disabled={isDisabled}
+        className={cn(isDisabled && "opacity-50 pointer-events-none")}
       >
         {isTarget ? <Loader2 className="animate-spin" /> : icon}
         <span className="group-data-[state=collapsed]:hidden">{label}</span>
@@ -82,7 +86,17 @@ function NavButtonLink({
   );
 }
 
-function MobileNav({ isNavigating, targetPath, handleLinkClick }: { isNavigating: boolean; targetPath: string; handleLinkClick: (href: string) => void; }) {
+function MobileNav({ 
+    currentPath, 
+    targetPath, 
+    isNavigating, 
+    handleLinkClick 
+}: { 
+    currentPath: string;
+    targetPath: string; 
+    isNavigating: boolean; 
+    handleLinkClick: (href: string) => void; 
+}) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -98,7 +112,8 @@ function MobileNav({ isNavigating, targetPath, handleLinkClick }: { isNavigating
                             href={item.href}
                             label={item.label}
                             icon={item.icon}
-                            isActive={targetPath === item.href}
+                            currentPath={currentPath}
+                            targetPath={targetPath}
                             isNavigating={isNavigating}
                             onClick={() => handleLinkClick(item.href)}
                             isMobile={true}
@@ -125,7 +140,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const isMobile = useIsMobile();
   const [isMounted, setIsMounted] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -136,8 +150,12 @@ export default function DashboardLayout({
   }, []);
 
   useEffect(() => {
-    setIsNavigating(false);
-  }, [pathname]);
+    // Reset navigation state when the new page loads
+    if (pathname === targetPath) {
+        setIsNavigating(false);
+        setTargetPath("");
+    }
+  }, [pathname, targetPath]);
 
   const handleLinkClick = (href: string) => {
     if (pathname !== href) {
@@ -168,7 +186,8 @@ export default function DashboardLayout({
                       href={item.href}
                       label={item.label}
                       icon={item.icon}
-                      isActive={targetPath === item.href || pathname === item.href}
+                      currentPath={pathname}
+                      targetPath={targetPath}
                       isNavigating={isNavigating}
                       onClick={() => handleLinkClick(item.href)}
                     />
@@ -201,7 +220,7 @@ export default function DashboardLayout({
             
             <div className="flex items-center gap-2">
               <ThemeToggleButton />
-              {isMobile && <MobileNav isNavigating={isNavigating} targetPath={targetPath} handleLinkClick={handleLinkClick} />}
+              {isMobile && <MobileNav currentPath={pathname} targetPath={targetPath} isNavigating={isNavigating} handleLinkClick={handleLinkClick} />}
             </div>
           </header>
           <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
