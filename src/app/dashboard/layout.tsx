@@ -57,12 +57,6 @@ function MobileNav() {
                 ))}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                    <Link href="/" target="_blank" className="flex items-center gap-2">
-                        <ExternalLink />
-                        <span>Go to Site</span>
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                     <form action={logout} className="w-full">
                         <button type="submit" className="w-full flex items-center text-red-500 gap-2">
                             <LogOut />
@@ -121,12 +115,6 @@ export default function DashboardLayout({
             </SidebarContent>
             <SidebarFooter>
               <div className="flex flex-col gap-2">
-                  <Link href="/" target="_blank" legacyBehavior passHref>
-                      <Button variant="outline" className="w-full justify-start">
-                          <ExternalLink />
-                          <span className="group-data-[state=collapsed]:hidden">Go to Site</span>
-                      </Button>
-                  </Link>
                   <form action={logout}>
                       <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-red-500/10 hover:text-red-500">
                           <LogOut />
