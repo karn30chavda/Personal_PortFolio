@@ -1,10 +1,9 @@
-
 "use client";
 
 import Link from 'next/link';
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award, Mail, Loader2 } from 'lucide-react';
+import { User, Info, LogOut, Menu, Wrench, FolderKanban, Award, Mail } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -27,7 +26,6 @@ import { logout } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggleButton } from '@/components/theme-toggle-button';
-import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Profile', icon: <User /> },
@@ -91,9 +89,9 @@ export default function DashboardLayout({
       <div className="flex min-h-screen bg-background">
         {/* Placeholder for sidebar to prevent layout shift */}
         <div className="w-[16rem] hidden md:block" /> 
-        <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <div className="flex-1 flex flex-col">
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6 shrink-0" />
-          <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8" />
+          <main className="flex-1" />
         </div>
       </div>
     );
@@ -138,7 +136,7 @@ export default function DashboardLayout({
             </SidebarFooter>
           </Sidebar>
         )}
-        <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <div className="flex-1 flex flex-col">
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6 shrink-0">
             <div className='flex items-center gap-2'>
               {!isMobile && <SidebarTrigger />}
@@ -154,7 +152,7 @@ export default function DashboardLayout({
               {isMobile && <MobileNav />}
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1">
             <React.Suspense fallback={<DashboardLoading />}>
                 {children}
             </React.Suspense>
