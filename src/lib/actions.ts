@@ -529,6 +529,7 @@ export type ContactSubmission = {
     name: string;
     email: string;
     message: string;
+    inquiryType: string;
     submittedAt: string;
 };
 
@@ -549,6 +550,7 @@ export async function getContactSubmissions(): Promise<ContactSubmission[]> {
                 name: data.name,
                 email: data.email,
                 message: data.message,
+                inquiryType: data.inquiryType,
                 // Firestore Timestamps need to be converted to a serializable format
                 submittedAt: data.submittedAt.toDate().toISOString(), 
             }

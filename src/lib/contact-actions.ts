@@ -8,16 +8,22 @@ import { z } from "zod";
 const ContactFormSchema = z.object({
   name: z.string().min(1, "Name is required."),
   email: z.string().email("Invalid email address."),
+  inquiryType: z.enum(["work-inquiry", "website-building", "general-question"]),
   message: z.string().min(10, "Message must be at least 10 characters long."),
 });
 
-export async function saveContactMessage(prevState: any, formData: FormData) {
+type ContactFormValues = z.infer<typeof ContactFormSchema>;
+
+type ActionResult = {
+    success: boolean;
+    message?: string | null;
+    errors?: Partial<Record<keyof ContactFormValues, string[]>>;
+};
+
+
+export async function saveContactMessage(data: ContactFormValues): Promise<ActionResult> {
   try {
-    const validatedFields = ContactFormSchema.safeParse({
-      name: formData.get('name'),
-      email: formData.get('email'),
-      message: formData.get('message'),
-    });
+    const validatedFields = ContactFormSchema.safeParse(data);
 
     if (!validatedFields.success) {
       return {

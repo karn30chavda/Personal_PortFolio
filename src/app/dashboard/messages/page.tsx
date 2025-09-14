@@ -2,6 +2,20 @@
 import { getContactSubmissions } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+
+function formatInquiryType(type: string) {
+    switch (type) {
+        case 'work-inquiry':
+            return 'Work Inquiry';
+        case 'website-building':
+            return 'Website Building';
+        case 'general-question':
+            return 'General Question';
+        default:
+            return 'General';
+    }
+}
 
 export default async function DashboardMessagesPage() {
   const messages = await getContactSubmissions();
@@ -28,7 +42,7 @@ export default async function DashboardMessagesPage() {
           {messages.map((message) => (
             <Card key={message.id} className="p-0 md:bg-white/70 md:dark:bg-gray-900/50 md:backdrop-blur-md md:rounded-2xl md:border md:border-gray-200 md:dark:border-gray-800 md:shadow-sm md:hover:shadow-md md:transition-shadow">
               <CardHeader>
-                <div className='flex justify-between items-start'>
+                <div className='flex justify-between items-start gap-4'>
                     <div>
                         <CardTitle className="text-lg">{message.name}</CardTitle>
                         <CardDescription>
@@ -37,9 +51,14 @@ export default async function DashboardMessagesPage() {
                             </a>
                         </CardDescription>
                     </div>
-                    <p className="text-xs text-muted-foreground shrink-0">
-                        {formatDistanceToNow(new Date(message.submittedAt), { addSuffix: true })}
-                    </p>
+                    <div className='text-right'>
+                        <p className="text-xs text-muted-foreground shrink-0 mb-2">
+                            {formatDistanceToNow(new Date(message.submittedAt), { addSuffix: true })}
+                        </p>
+                        {message.inquiryType && (
+                            <Badge variant="secondary">{formatInquiryType(message.inquiryType)}</Badge>
+                        )}
+                    </div>
                 </div>
               </CardHeader>
               <CardContent>

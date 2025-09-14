@@ -1,88 +1,148 @@
-
 "use client"
 
-import { useActionState, useEffect, useRef } from "react"
-import { useFormStatus } from "react-dom"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
-import { saveContactMessage } from "@/lib/contact-actions"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { saveContactMessage } from "@/lib/contact-actions";
+import { useState, useTransition } from "react";
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={pending}>
-      {pending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Sending...
-        </>
-      ) : (
-        "Send Message"
-      )}
-    </Button>
-  );
-}
+const contactFormSchema = z.object({
+  name: z.string().min(1, "Name is required."),
+  email: z.string().email("Invalid email address."),
+  inquiryType: z.enum(["work-inquiry", "website-building", "general-question"], {
+    required_error: "Please select an inquiry type.",
+  }),
+  message: z.string().min(10, "Message must be at least 10 characters long."),
+});
+
+type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 export function ContactForm() {
-  const [state, formAction] = useActionState(saveContactMessage, { success: false, message: '', errors: {} });
   const { toast } = useToast();
-  const formRef = useRef<HTMLFormElement>(null);
+  const [isPending, startTransition] = useTransition();
+  const [formError, setFormError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (state.message) {
-      if (state.success) {
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      message: "",
+    },
+  });
+
+  const onSubmit = (data: ContactFormValues) => {
+    setFormError(null);
+    startTransition(async () => {
+      const result = await saveContactMessage(data);
+      if (result.success) {
         toast({
           title: "Message Sent!",
-          description: "Thanks for reaching out. Your message has been submitted.",
+          description: "Thanks for reaching out. I'll get back to you shortly.",
         });
-        formRef.current?.reset();
+        form.reset();
       } else {
-        const errorMsg = state.errors ? Object.values(state.errors).flat().join(' ') : '';
+        const errorMessage = result.errors ? Object.values(result.errors).flat().join(" ") : result.message;
+        setFormError(errorMessage || "An unknown error occurred.");
         toast({
-          title: "Error",
-          description: state.message + ' ' + errorMsg,
+          title: "Error Sending Message",
+          description: errorMessage,
           variant: "destructive",
         });
       }
-    }
-  }, [state, toast]);
+    });
+  };
 
   return (
-    <form
-      ref={formRef}
-      action={formAction}
-      className="space-y-6 bg-card p-6 md:p-8 rounded-lg shadow-lg border border-border"
-    >
-      <div className="space-y-2">
-        <Label htmlFor="name">Full Name</Label>
-        <Input id="name" name="name" placeholder="John Doe" required />
-        {state?.errors?.name && <p className="text-sm font-medium text-destructive">{state.errors.name[0]}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
-        <Input id="email" name="email" type="email" placeholder="you@example.com" required />
-        {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email[0]}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="message">Message</Label>
-        <Textarea
-          id="message"
-          name="message"
-          placeholder="Your message here..."
-          className="min-h-[120px]"
-          required
-          minLength={10}
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 bg-card p-6 md:p-8 rounded-lg shadow-lg border border-border"
+      >
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {state?.errors?.message && <p className="text-sm font-medium text-destructive">{state.errors.message[0]}</p>}
-      </div>
-
-      <SubmitButton />
-    </form>
-  )
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email Address</FormLabel>
+              <FormControl>
+                <Input placeholder="you@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="inquiryType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Inquiry Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a reason for contacting" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="work-inquiry">Work Inquiry</SelectItem>
+                  <SelectItem value="website-building">Website Building</SelectItem>
+                  <SelectItem value="general-question">General Question</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="message"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Message</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Your message here..."
+                  className="min-h-[120px]"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {formError && <p className="text-sm font-medium text-destructive">{formError}</p>}
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : (
+            "Send Message"
+          )}
+        </Button>
+      </form>
+    </Form>
+  );
 }
