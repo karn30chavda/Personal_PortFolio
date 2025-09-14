@@ -126,9 +126,8 @@ export function ProjectsForm({
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8">
         {fields.map((projectItem, index) => (
           <div key={projectItem.id} className="p-4 md:p-6 rounded-lg border bg-card/50">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 flex-grow">
-              {/* Left column for image */}
-              <div className="space-y-4 lg:col-span-1">
+            <div className="space-y-6">
+              <div className="space-y-4">
                   <FormLabel>Project Image</FormLabel>
                   <div className="relative w-full aspect-video rounded-md overflow-hidden border">
                     <Image
@@ -169,8 +168,7 @@ export function ProjectsForm({
                   />
               </div>
 
-              {/* Right column for inputs */}
-              <div className="space-y-6 lg:col-span-2">
+              <div className="space-y-6">
                 <FormField
                   control={form.control}
                   name={`projectsData.${index}.title`}
