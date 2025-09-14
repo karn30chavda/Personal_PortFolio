@@ -3,8 +3,8 @@
 
 import Link from 'next/link';
 import * as React from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award, Mail, Loader2 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award, Mail } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -27,8 +27,7 @@ import { logout } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggleButton } from '@/components/theme-toggle-button';
-import { useEffect, useState, useTransition } from 'react';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Profile', icon: <User /> },
@@ -39,71 +38,9 @@ const navItems = [
   { href: '/dashboard/messages', label: 'Messages', icon: <Mail /> },
 ];
 
-function NavButtonLink({
-  href,
-  label,
-  icon,
-  currentPath,
-  targetPath,
-  isNavigating,
-  onClick,
-  isMobile = false,
-}: {
-  href: string;
-  label: string;
-  icon: React.ReactNode;
-  currentPath: string;
-  targetPath: string;
-  isNavigating: boolean;
-  onClick: () => void;
-  isMobile?: boolean;
-}) {
-  const isActive = currentPath === href;
-  const isTarget = isNavigating && targetPath === href;
-  const isDisabled = isNavigating && !isTarget;
-
-  if (isMobile) {
-    return (
-      <Link href={href} onClick={onClick} className={cn("flex items-center w-full", isDisabled && "opacity-50 pointer-events-none")}>
-        {isTarget ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : React.cloneElement(icon as React.ReactElement, { className: "mr-2 h-4 w-4" })}
-        <span>{label}</span>
-      </Link>
-    );
-  }
-
-  return (
-    <Link href={href} legacyBehavior passHref>
-      <SidebarMenuButton
-        isActive={isActive}
-        tooltip={label}
-        onClick={onClick}
-        disabled={isDisabled}
-        className={cn(isDisabled && "opacity-50 pointer-events-none")}
-      >
-        {isTarget ? <Loader2 className="animate-spin" /> : icon}
-        <span className="group-data-[state=collapsed]:hidden">{label}</span>
-      </SidebarMenuButton>
-    </Link>
-  );
-}
-
-function MobileNav({ 
-    currentPath, 
-    targetPath, 
-    isNavigating, 
-    handleLinkClick 
-}: { 
-    currentPath: string;
-    targetPath: string; 
-    isNavigating: boolean; 
-    handleLinkClick: (href: string) => void; 
-}) {
+function MobileNav() {
+    const pathname = usePathname();
     const [open, setOpen] = useState(false);
-
-    const onLinkClick = (href: string) => {
-        handleLinkClick(href);
-        setOpen(false);
-    }
     return (
         <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
@@ -114,22 +51,16 @@ function MobileNav({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 {navItems.map((item) => (
-                    <DropdownMenuItem key={item.label} disabled={isNavigating && targetPath !== item.href} asChild>
-                         <NavButtonLink
-                            href={item.href}
-                            label={item.label}
-                            icon={item.icon}
-                            currentPath={currentPath}
-                            targetPath={targetPath}
-                            isNavigating={isNavigating}
-                            onClick={() => onLinkClick(item.href)}
-                            isMobile={true}
-                        />
+                    <DropdownMenuItem key={item.label} asChild onClick={() => setOpen(false)}>
+                        <Link href={item.href} className={`flex items-center w-full ${pathname === item.href ? 'font-semibold text-primary' : ''}`}>
+                            {React.cloneElement(item.icon as React.ReactElement, { className: "mr-2 h-4 w-4" })}
+                            <span>{item.label}</span>
+                        </Link>
                     </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                    <form action={logout} className="w-full">
+                <DropdownMenuItem asChild>
+                     <form action={logout} className="w-full">
                         <button type="submit" className="w-full flex items-center text-red-500 hover:text-red-500/90 gap-2">
                             <LogOut className="mr-2 h-4 w-4" />
                             <span>Logout</span>
@@ -149,30 +80,22 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const [isMounted, setIsMounted] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [targetPath, setTargetPath] = useState("");
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    // Reset navigation state when the new page loads
-    if (pathname === targetPath) {
-        setIsNavigating(false);
-        setTargetPath("");
-    }
-  }, [pathname, targetPath]);
-
-  const handleLinkClick = (href: string) => {
-    if (pathname !== href) {
-        setIsNavigating(true);
-        setTargetPath(href);
-    }
-  };
-
   if (!isMounted) {
-    return <div className="h-screen w-full bg-background" />; // or a loading spinner
+    return (
+      <div className="flex min-h-screen bg-background">
+        {/* Placeholder for sidebar to prevent layout shift */}
+        <div className="w-[16rem] hidden md:block" /> 
+        <div className="flex-1 flex flex-col h-screen overflow-hidden">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6 shrink-0" />
+          <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -189,15 +112,15 @@ export default function DashboardLayout({
               <SidebarMenu>
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.label}>
-                    <NavButtonLink
-                      href={item.href}
-                      label={item.label}
-                      icon={item.icon}
-                      currentPath={pathname}
-                      targetPath={targetPath}
-                      isNavigating={isNavigating}
-                      onClick={() => handleLinkClick(item.href)}
-                    />
+                    <Link href={item.href} legacyBehavior passHref>
+                      <SidebarMenuButton
+                        isActive={pathname === item.href}
+                        tooltip={item.label}
+                      >
+                        {item.icon}
+                        <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
+                      </SidebarMenuButton>
+                    </Link>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -227,14 +150,39 @@ export default function DashboardLayout({
             
             <div className="flex items-center gap-2">
               <ThemeToggleButton />
-              {isMobile && <MobileNav currentPath={pathname} targetPath={targetPath} isNavigating={isNavigating} handleLinkClick={handleLinkClick} />}
+              {isMobile && <MobileNav />}
             </div>
           </header>
-          <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-            {children}
+          <main className="flex-1 overflow-y-auto">
+            <React.Suspense fallback={<DashboardLoading />}>
+                {children}
+            </React.Suspense>
           </main>
         </div>
       </div>
     </SidebarProvider>
   );
+}
+
+function DashboardLoading() {
+    return (
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 py-8 space-y-10 animate-pulse">
+            <div className="text-center lg:text-left space-y-2">
+                <div className="h-10 bg-muted rounded w-1/2 mx-auto lg:mx-0"></div>
+                <div className="h-5 bg-muted rounded w-3/4 mx-auto lg:mx-0"></div>
+            </div>
+
+            <div className="p-0 md:p-6 bg-muted/50 rounded-2xl border border-border space-y-8">
+                <div className="h-10 bg-muted rounded w-1/4"></div>
+                <div className="space-y-4">
+                    <div className="h-8 bg-muted rounded w-full"></div>
+                    <div className="h-8 bg-muted rounded w-full"></div>
+                    <div className="h-20 bg-muted rounded w-full"></div>
+                </div>
+                <div className="flex justify-end">
+                    <div className="h-10 bg-muted rounded w-24"></div>
+                </div>
+            </div>
+        </div>
+    );
 }
