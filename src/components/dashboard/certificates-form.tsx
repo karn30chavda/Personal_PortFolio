@@ -121,123 +121,123 @@ export function CertificatesForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8">
         {fields.map((certItem, index) => (
-          <div key={certItem.id} className="flex items-start gap-4">
-            <div
-              className="p-4 md:p-6 rounded-lg border bg-card/50 space-y-6 flex-grow"
-            >
-              <div className="space-y-4">
-                  <FormLabel>Certificate Image</FormLabel>
-                  <div className="relative w-full aspect-video rounded-md overflow-hidden border">
-                    <Image
-                      src={
-                        imagePreviews[index] ||
-                        form.watch(`certificatesData.${index}.imageUrl`) ||
-                        'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate'
-                      }
-                      alt="Certificate image"
-                      fill
-                      className="object-cover"
+          <div key={certItem.id} className="p-4 md:p-6 rounded-lg border bg-card/50 space-y-6">
+            <div className="flex justify-between items-start gap-4">
+              <div className="space-y-6 flex-grow">
+                <div className="space-y-4">
+                    <FormLabel>Certificate Image</FormLabel>
+                    <div className="relative w-full aspect-video rounded-md overflow-hidden border">
+                      <Image
+                        src={
+                          imagePreviews[index] ||
+                          form.watch(`certificatesData.${index}.imageUrl`) ||
+                          'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate'
+                        }
+                        alt="Certificate image"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name={`certificatesData.${index}.imageFile` as any} 
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="sr-only">Image File</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onBlur={field.onBlur}
+                              name={field.name}
+                              ref={field.ref}
+                              onChange={(e) => {
+                                field.onChange(e.target.files);
+                                handleImageChange(e, index);
+                              }}
+                              className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold 
+                              file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name={`certificatesData.${index}.imageFile` as any} 
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="sr-only">Image File</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            ref={field.ref}
-                            onChange={(e) => {
-                              field.onChange(e.target.files);
-                              handleImageChange(e, index);
-                            }}
-                            className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold 
-                            file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name={`certificatesData.${index}.title`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Certificate Title</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., AWS Certified Cloud Practitioner"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`certificatesData.${index}.issuer`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Issuer</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., Amazon Web Services"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`certificatesData.${index}.date`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., October 2023" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`certificatesData.${index}.credentialUrl`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Credential URL</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://example.com/credential"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-              
-              <FormField
-                control={form.control}
-                name={`certificatesData.${index}.title`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Certificate Title</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., AWS Certified Cloud Practitioner"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`certificatesData.${index}.issuer`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Issuer</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., Amazon Web Services"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`certificatesData.${index}.date`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., October 2023" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`certificatesData.${index}.credentialUrl`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Credential URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://example.com/credential"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                onClick={() => remove(index)}
+                className="shrink-0"
+              >
+                <Trash className="h-4 w-4" />
+                <span className="sr-only">Remove Certificate</span>
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              onClick={() => remove(index)}
-              className="mt-8 shrink-0"
-            >
-              <Trash className="h-4 w-4" />
-              <span className="sr-only">Remove Certificate</span>
-            </Button>
           </div>
         ))}
 
