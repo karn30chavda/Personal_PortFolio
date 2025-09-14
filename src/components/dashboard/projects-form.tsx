@@ -25,7 +25,7 @@ import Image from 'next/image';
 const projectSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
-  imageUrl: z.string().min(1, 'Image URL is required'),
+  imageUrl: z.string().min(1, 'Image URL is. required'),
   tags: z.string().min(1, 'Tags are required'),
   liveUrl: z.string().url().optional().or(z.literal('')),
   repoUrl: z.string().url().optional().or(z.literal('')),
@@ -147,7 +147,7 @@ export function ProjectsForm({
                     src={
                       imagePreviews[index] ||
                       form.watch(`projectsData.${index}.imageUrl`) ||
-                      '/images/placeholder.png'
+                      'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project'
                     }
                     alt="Project image"
                     fill

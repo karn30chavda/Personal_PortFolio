@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash, Loader2, Upload } from 'lucide-react';
+import { Plus, Trash, Loader2 } from 'lucide-react';
 import { useActionState, useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { updateCertificatesData } from '@/lib/actions';
@@ -34,23 +34,12 @@ const certificatesFormSchema = z.object({
 
 type CertificatesFormValues = z.infer<typeof certificatesFormSchema>;
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
-    return (
-      <Button type="submit" disabled={pending}>
-        {pending ? (
-          <>
-            <Loader2 className="animate-spin mr-2" />
-            Saving...
-          </>
-        ) : (
-          'Save Changes'
-        )}
-      </Button>
-    );
-  }
-
-export function CertificatesForm({ currentCertificates }: { currentCertificates: CertificatesFormValues['certificatesData'] }) {
+export function CertificatesForm({
+  currentCertificates,
+}: {
+  currentCertificates: CertificatesFormValues['certificatesData'];
+}) {
+  const { pending } = useFormStatus();
   const form = useForm<CertificatesFormValues>({
     resolver: zodResolver(certificatesFormSchema),
     defaultValues: {
@@ -65,15 +54,18 @@ export function CertificatesForm({ currentCertificates }: { currentCertificates:
   });
 
   const { toast } = useToast();
-  
-  const [state, formAction] = useActionState(updateCertificatesData, { success: false, message: '' });
+
+  const [state, formAction] = useActionState(updateCertificatesData, {
+    success: false,
+    message: '',
+  });
 
   const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([]);
 
   useEffect(() => {
-    setImagePreviews(currentCertificates.map(c => c.imageUrl || null));
+    setImagePreviews(currentCertificates.map((c) => c.imageUrl || null));
   }, [currentCertificates]);
-  
+
   useEffect(() => {
     if (state?.message) {
       if (state.success) {
@@ -94,7 +86,10 @@ export function CertificatesForm({ currentCertificates }: { currentCertificates:
     }
   }, [state, toast, form]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -110,120 +105,139 @@ export function CertificatesForm({ currentCertificates }: { currentCertificates:
   const handleFormAction = (formData: FormData) => {
     const data = form.getValues();
     formData.append('certificatesData', JSON.stringify(data.certificatesData));
+
+    // Append actual files
+    data.certificatesData.forEach((_, index) => {
+      const fileInput = document.querySelector<HTMLInputElement>(
+        `input[name="image_${index}"]`
+      );
+      if (fileInput?.files?.[0]) {
+        formData.append(`image_${index}`, fileInput.files[0]);
+      }
+    });
+
     formAction(formData);
   };
 
   return (
     <Form {...form}>
-      <form
-        action={handleFormAction}
-        className="space-y-8"
-      >
-        <input
-            type="hidden"
-            {...form.register('certificatesData')}
-            value={JSON.stringify(form.watch('certificatesData'))}
-        />
+      <form action={handleFormAction} className="space-y-8">
         {fields.map((certItem, index) => (
-          <div key={certItem.id} className="p-4 md:p-6 rounded-lg border bg-card/50 space-y-6 relative">
+          <div
+            key={certItem.id}
+            className="p-4 md:p-6 rounded-lg border bg-card/50 space-y-6 relative"
+          >
             <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => remove(index)}
-                className="absolute -top-3 -right-3 shrink-0 z-10"
-              >
-                <Trash className="h-4 w-4" />
-                <span className="sr-only">Remove Certificate</span>
+              type="button"
+              variant="destructive"
+              size="icon"
+              onClick={() => remove(index)}
+              className="absolute -top-3 -right-3 shrink-0 z-10"
+            >
+              <Trash className="h-4 w-4" />
+              <span className="sr-only">Remove Certificate</span>
             </Button>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-1 space-y-2">
-                    <FormLabel>Certificate Image</FormLabel>
-                    <div className="relative w-full aspect-video rounded-md overflow-hidden border">
-                        <Image
-                            src={imagePreviews[index] || form.watch(`certificatesData.${index}.imageUrl`) || '/images/placeholder.png'}
-                            alt="Certificate image"
-                            fill
-                            className="object-cover"
-                        />
-                    </div>
-                     <FormField
-                      control={form.control}
-                      name={`certificatesData.${index}.imageUrl`} // This is just for the schema, the file input below is what matters
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='sr-only'>Image File</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="file" 
-                              name={`image_${index}`}
-                              accept="image/*"
-                              onChange={(e) => handleImageChange(e, index)}
-                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <div className="md:col-span-1 space-y-2">
+                <FormLabel>Certificate Image</FormLabel>
+                <div className="relative w-full aspect-video rounded-md overflow-hidden border">
+                  <Image
+                    src={
+                      imagePreviews[index] ||
+                      form.watch(`certificatesData.${index}.imageUrl`) ||
+                      'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate'
+                    }
+                    alt="Certificate image"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
-                <div className="md:col-span-2 space-y-4">
-                    <FormField
-                        control={form.control}
-                        name={`certificatesData.${index}.title`}
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Certificate Title</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g., AWS Certified Cloud Practitioner" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name={`certificatesData.${index}.issuer`}
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Issuer</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g., Amazon Web Services" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                        <FormField
-                            control={form.control}
-                            name={`certificatesData.${index}.date`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Date</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="e.g., October 2023" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
+                <FormField
+                  control={form.control}
+                  name={`certificatesData.${index}.imageUrl`}
+                  render={() => (
+                    <FormItem>
+                      <FormLabel className="sr-only">Image File</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          name={`image_${index}`}
+                          accept="image/*"
+                          onChange={(e) => handleImageChange(e, index)}
+                          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                         />
-                        <FormField
-                            control={form.control}
-                            name={`certificatesData.${index}.credentialUrl`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Credential URL</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="https://example.com/credential" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:col-span-2 space-y-4">
+                <FormField
+                  control={form.control}
+                  name={`certificatesData.${index}.title`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Certificate Title</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., AWS Certified Cloud Practitioner"
+                          {...field}
                         />
-                    </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`certificatesData.${index}.issuer`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Issuer</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., Amazon Web Services"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`certificatesData.${index}.date`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., October 2023" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`certificatesData.${index}.credentialUrl`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Credential URL</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://example.com/credential"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
+              </div>
             </div>
           </div>
         ))}
@@ -233,14 +247,33 @@ export function CertificatesForm({ currentCertificates }: { currentCertificates:
             type="button"
             variant="outline"
             onClick={() => {
-              append({ title: '', issuer: '', date: '', imageUrl: 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate', credentialUrl: '' });
-              setImagePreviews([...imagePreviews, 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate' ]);
+              append({
+                title: '',
+                issuer: '',
+                date: '',
+                imageUrl:
+                  'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate',
+                credentialUrl: '',
+              });
+              setImagePreviews([
+                ...imagePreviews,
+                'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate',
+              ]);
             }}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Certificate
           </Button>
-          <SubmitButton />
+          <Button type="submit" disabled={pending}>
+            {pending ? (
+              <>
+                <Loader2 className="animate-spin mr-2" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
+          </Button>
         </div>
       </form>
     </Form>
