@@ -3,27 +3,22 @@
 
 import React, { useState, useRef } from 'react';
 import {
-  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { Loader2, Upload, Crop as CropIcon } from 'lucide-react';
+import { Loader2, Crop as CropIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ImageCropperDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
   onSave: (croppedImage: string | null) => void;
   isSaving: boolean;
-  children: React.ReactNode;
 }
 
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number): Crop {
@@ -82,7 +77,7 @@ async function getCroppedImg(
     });
 }
 
-export function ImageCropperDialog({ isOpen, onOpenChange, onSave, isSaving, children }: ImageCropperDialogProps) {
+export function ImageCropperDialog({ onSave, isSaving }: ImageCropperDialogProps) {
   const [imgSrc, setImgSrc] = useState('');
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop>();
@@ -113,60 +108,50 @@ export function ImageCropperDialog({ isOpen, onOpenChange, onSave, isSaving, chi
     onSave(croppedImageUrl);
   };
 
-  const handleClose = () => {
-    setImgSrc('');
-    setCrop(undefined);
-    setCompletedCrop(undefined);
-    onOpenChange(false);
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[625px]" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle>Crop Your Profile Picture</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <Input type="file" accept="image/*" onChange={onSelectFile} />
-          {imgSrc && (
-            <div className='flex justify-center bg-muted/50 p-4 rounded-md'>
-              <ReactCrop
-                crop={crop}
-                onChange={c => setCrop(c)}
-                onComplete={(c) => setCompletedCrop(c)}
-                aspect={1}
-                minWidth={100}
-                circularCrop
-              >
-                <img
-                    ref={imgRef}
-                    alt="Crop me"
-                    src={imgSrc}
-                    onLoad={onImageLoad}
-                    style={{ maxHeight: '70vh' }}
-                />
-              </ReactCrop>
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-            <DialogClose asChild>
-                <Button type="button" variant="secondary">Cancel</Button>
-            </DialogClose>
-            <Button onClick={handleSaveCrop} disabled={!completedCrop || isSaving}>
-                {isSaving ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-                    </>
-                ) : (
-                    <>
-                        <CropIcon className="mr-2 h-4 w-4" /> Save Crop
-                    </>
-                )}
-            </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DialogContent className="sm:max-w-[625px]">
+      <DialogHeader>
+        <DialogTitle>Crop Your Profile Picture</DialogTitle>
+      </DialogHeader>
+      <div className="grid gap-4 py-4">
+        <Input type="file" accept="image/*" onChange={onSelectFile} />
+        {imgSrc && (
+          <div className='flex justify-center bg-muted/50 p-4 rounded-md'>
+            <ReactCrop
+              crop={crop}
+              onChange={c => setCrop(c)}
+              onComplete={(c) => setCompletedCrop(c)}
+              aspect={1}
+              minWidth={100}
+              circularCrop
+            >
+              <img
+                  ref={imgRef}
+                  alt="Crop me"
+                  src={imgSrc}
+                  onLoad={onImageLoad}
+                  style={{ maxHeight: '70vh' }}
+              />
+            </ReactCrop>
+          </div>
+        )}
+      </div>
+      <DialogFooter>
+          <DialogClose asChild>
+              <Button type="button" variant="secondary">Cancel</Button>
+          </DialogClose>
+          <Button onClick={handleSaveCrop} disabled={!completedCrop || isSaving}>
+              {isSaving ? (
+                  <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                  </>
+              ) : (
+                  <>
+                      <CropIcon className="mr-2 h-4 w-4" /> Save Crop
+                  </>
+              )}
+          </Button>
+      </DialogFooter>
+    </DialogContent>
   );
 }

@@ -9,6 +9,7 @@ import { Loader2, Edit } from 'lucide-react';
 import { updateProfilePicture } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ImageCropperDialog } from './image-cropper-dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 
 export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }) {
   const [state, formAction] = useActionState(updateProfilePicture, { success: false, message: '' });
@@ -59,17 +60,18 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
             />
         </div>
 
-        <ImageCropperDialog
-            isOpen={dialogOpen}
-            onOpenChange={setDialogOpen}
-            onSave={handleSave}
-            isSaving={isPending}
-        >
-            <Button onClick={() => setDialogOpen(true)} variant="outline">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Picture
-            </Button>
-        </ImageCropperDialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline">
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Picture
+                </Button>
+            </DialogTrigger>
+            <ImageCropperDialog
+                onSave={handleSave}
+                isSaving={isPending}
+            />
+        </Dialog>
 
         {isPending && (
             <div className="flex items-center justify-center text-muted-foreground text-sm">
