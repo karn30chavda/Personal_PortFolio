@@ -22,7 +22,7 @@ async function uploadImageToCloudinary(file: File) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
     
-    return new Promise((resolve, reject) => {
+    return new Promise<string | null>((resolve, reject) => {
         cloudinary.uploader.upload_stream({
             folder: 'portfolio-uploads',
         }, (error, result) => {
@@ -30,7 +30,7 @@ async function uploadImageToCloudinary(file: File) {
                 reject(error);
                 return;
             }
-            resolve(result?.secure_url);
+            resolve(result?.secure_url || null);
         }).end(buffer);
     });
 }
@@ -61,26 +61,10 @@ export async function updateProfilePicture(prevState: any, formData: FormData) {
       return { success: false, message: 'No image provided.' };
     }
     
-    const arrayBuffer = await imageFile.arrayBuffer();
-    const buffer = new Uint8Array(arrayBuffer);
-    
-    const results = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream({
-        folder: 'portfolio-profile',
-        width: 500,
-        height: 500,
-        crop: 'fill',
-        gravity: 'face',
-      }, (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve(result);
-      }).end(buffer);
-    }) as any;
-
-    const imageUrl = results.secure_url;
+    const imageUrl = await uploadImageToCloudinary(imageFile);
+    if (!imageUrl) {
+        throw new Error('Image upload failed.');
+    }
     
     await updateDoc(doc(db, "siteConfig", "profile"), {
       imageUrl: imageUrl,
@@ -171,22 +155,10 @@ export async function updateAboutImage(prevState: any, formData: FormData) {
         return { success: false, message: 'No image provided.' };
       }
       
-      const arrayBuffer = await imageFile.arrayBuffer();
-      const buffer = new Uint8Array(arrayBuffer);
-      
-      const results = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream({
-          folder: 'portfolio-about',
-        }, (error, result) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-          resolve(result);
-        }).end(buffer);
-      }) as any;
-  
-      const imageUrl = results.secure_url;
+      const imageUrl = await uploadImageToCloudinary(imageFile);
+      if (!imageUrl) {
+        throw new Error('Image upload failed.');
+      }
       
       await updateDoc(doc(db, "siteConfig", "about"), {
         imageUrl: imageUrl,
@@ -235,7 +207,7 @@ export async function updateSkillsData(prevState: any, formData: FormData) {
         };
       }
       
-      await setDoc(doc(db, "siteConfig", "skills"), { skillsData: validatedFields.data });
+      await setDoc(doc(db, "siteConfig", "skills"), { skills: validatedFields.data });
   
       revalidatePath("/");
       revalidatePath("/dashboard/skills");
@@ -281,14 +253,16 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
         validatedFields.data.map(async (project, index) => {
             const imageFile = formData.get(`image_${index}`) as File;
             if (imageFile && imageFile.size > 0) {
-                const newImageUrl = await uploadImageToCloudinary(imageFile) as string;
-                return { ...project, imageUrl: newImageUrl };
+                const newImageUrl = await uploadImageToCloudinary(imageFile);
+                if (newImageUrl) {
+                    return { ...project, imageUrl: newImageUrl };
+                }
             }
             return project;
         })
     );
 
-    await setDoc(doc(db, "siteConfig", "projects"), { projectsData: updatedProjects });
+    await setDoc(doc(db, "siteConfig", "projects"), { projects: updatedProjects });
 
     revalidatePath("/");
     revalidatePath("/dashboard/projects");
@@ -333,14 +307,16 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
             validatedFields.data.map(async (certificate, index) => {
                 const imageFile = formData.get(`image_${index}`) as File;
                 if (imageFile && imageFile.size > 0) {
-                    const newImageUrl = await uploadImageToCloudinary(imageFile) as string;
-                    return { ...certificate, imageUrl: newImageUrl };
+                    const newImageUrl = await uploadImageToCloudinary(imageFile);
+                    if (newImageUrl) {
+                        return { ...certificate, imageUrl: newImageUrl };
+                    }
                 }
                 return certificate;
             })
         );
         
-        await setDoc(doc(db, "siteConfig", "certificates"), { certificatesData: updatedCertificates });
+        await setDoc(doc(db, "siteConfig", "certificates"), { certificates: updatedCertificates });
 
         revalidatePath("/");
         revalidatePath("/dashboard/certificates");
@@ -353,8 +329,111 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
     }
 }
 
+const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
 
-  type SiteData = {
+My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
+
+When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.`;
+
+const defaultSkills = [
+    {
+        category: 'Core Languages & Markup',
+        categoryIconName: 'Code2',
+        skills: [
+            { name: 'C/C++', iconName: 'FileCode2' },
+            { name: 'HTML', iconName: 'CodeXml' },
+            { name: 'CSS', iconName: 'Palette' },
+            { name: 'JavaScript', iconName: 'Braces' },
+            { name: 'SQL', iconName: 'Database' },
+        ]
+    },
+    {
+        category: 'Frameworks, Libraries & CSS Tools',
+        categoryIconName: 'Layers',
+        skills: [
+            { name: 'React', iconName: 'Atom' },
+            { name: 'Bootstrap', iconName: 'LayoutGrid' },
+            { name: 'FlexBox', iconName: 'StretchHorizontal' },
+            { name: 'Tailwind CSS', iconName: 'Wind' },
+            { name: 'Shadcn/UI', iconName: 'Component' },
+        ]
+    },
+    {
+        category: 'Development Tools & Platforms',
+        categoryIconName: 'TerminalSquare',
+        skills: [
+            { name: 'Git', iconName: 'GitFork' },
+            { name: 'GitHub', iconName: 'Github' },
+            { name: 'Visual Studio Code', iconName: 'Code2' },
+            { name: 'Netlify', iconName: 'Rocket' },
+            { name: 'Firebase Studio', iconName: 'LayoutDashboard' },
+        ]
+    },
+    {
+        category: 'Backend, BaaS & PWA',
+        categoryIconName: 'DatabaseZap',
+        skills: [
+            { name: 'Google Firebase', iconName: 'CloudCog' },
+            { name: 'Supabase', iconName: 'Server' },
+            { name: 'PWA', iconName: 'AppWindow' },
+            { name: 'Cloudinary', iconName: 'ImageUp' },
+        ]
+    },
+];
+
+const defaultProjects = [
+  {
+    title: 'PWA Calculator',
+    description: 'Progressive Web App with theme toggle and calculation history. Features offline functionality, splash screen, keyboard support, dark/light themes, and a lightweight design.',
+    imageUrl: '/images/calculator.jpg',
+    tags: 'PWA, JavaScript, HTML, CSS, Offline Support',
+    liveUrl: 'https://calcmate-calculate.netlify.app',
+    repoUrl: 'https://github.com/karn30chavda/CALCULATOR-PROJECT',
+  },
+  {
+    title: 'Designated Driver Service (DDS) Website',
+    description: 'Full-Stack Web App for booking professional drivers on-demand. Includes user/driver registration, role-based authentication, real-time booking, admin panel, driver background checks, responsive design, Firebase Hosting, and encrypted data storage.',
+    imageUrl: '/images/dds.jpg',
+    tags: 'Full-Stack, Firebase, JavaScript, Authentication, Real-time',
+    liveUrl: 'https://designated-driver-service.netlify.app',
+    repoUrl: 'https://github.com/karn30chavda/DRIVER-BOOKING-WEBSITE',
+  },
+  {
+    title: 'Sticky Notes PWA',
+    description: 'Secure Note-Taking App with rich text editing and PWA capabilities. Features PIN-protected notes, dark/light themes, real-time sync, profile picture upload, search/filter functionality, and responsive UI.',
+    imageUrl: '/images/stickynotes.jpg',
+    tags: 'Full-Stack, PWA, Security, Real-time Sync, JavaScript, Responsive UI',
+    liveUrl: 'https://stickynotesproject.netlify.app',
+    repoUrl: 'https://github.com/karn30chavda/STICKY-NOTE-PROJECT',
+  },
+  {
+    title: 'Tic Tac Win Game',
+    description: 'Offline-Ready Game with AI and multiplayer modes. Features a hand-drawn UI, responsive design, animated splash screen, PWA installation, and smooth animations.',
+    imageUrl: '/images/tictactoe.jpg',
+    tags: 'PWA, Game, AI, Multiplayer, JavaScript',
+    liveUrl: 'https://tictactoewinner.netlify.app',
+    repoUrl: 'https://github.com/karn30chavda/Tic-Tac-Toe-Game',
+  },
+];
+
+const defaultCertificates = [
+    {
+      title: 'Responsive Web Design',
+      issuer: 'freeCodeCamp',
+      date: 'December 2023',
+      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/responsive-web-design',
+      imageUrl: '/images/responsive-web-design.png',
+    },
+    {
+      title: 'JavaScript Algorithms and Data Structures',
+      issuer: 'freeCodeCamp',
+      date: 'December 2023',
+      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/javascript-algorithms-and-data-structures',
+      imageUrl: '/images/javascript-algos.png',
+    }
+];
+
+type SiteData = {
     imageUrl: string;
     name: string;
     title: string;
@@ -369,290 +448,72 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
     certificates: z.infer<typeof certificatesFormSchema>;
   };
   
-  export async function getSiteData(): Promise<SiteData> {
-    const defaultSkills = [
-        {
-            category: 'Core Languages & Markup',
-            categoryIconName: 'Code2',
-            skills: [
-                { name: 'C/C++', iconName: 'FileCode2' },
-                { name: 'HTML', iconName: 'CodeXml' },
-                { name: 'CSS', iconName: 'Palette' },
-                { name: 'JavaScript', iconName: 'Braces' },
-                { name: 'SQL', iconName: 'Database' },
-            ]
-        },
-        {
-            category: 'Frameworks, Libraries & CSS Tools',
-            categoryIconName: 'Layers',
-            skills: [
-                { name: 'React', iconName: 'Atom' },
-                { name: 'Bootstrap', iconName: 'LayoutGrid' },
-                { name: 'FlexBox', iconName: 'StretchHorizontal' },
-                { name: 'Tailwind CSS', iconName: 'Wind' },
-                { name: 'Shadcn/UI', iconName: 'Component' },
-            ]
-        },
-        {
-            category: 'Development Tools & Platforms',
-            categoryIconName: 'TerminalSquare',
-            skills: [
-                { name: 'Git', iconName: 'GitFork' },
-                { name: 'GitHub', iconName: 'Github' },
-                { name: 'Visual Studio Code', iconName: 'Code2' },
-                { name: 'Netlify', iconName: 'Rocket' },
-                { name: 'Firebase Studio', iconName: 'LayoutDashboard' },
-            ]
-        },
-        {
-            category: 'Backend, BaaS & PWA',
-            categoryIconName: 'DatabaseZap',
-            skills: [
-                { name: 'Google Firebase', iconName: 'CloudCog' },
-                { name: 'Supabase', iconName: 'Server' },
-                { name: 'PWA', iconName: 'AppWindow' },
-                { name: 'Cloudinary', iconName: 'ImageUp' },
-            ]
-        },
-    ];
-
-    const defaultProjects = [
-      {
-        title: 'PWA Calculator',
-        description: 'Progressive Web App with theme toggle and calculation history. Features offline functionality, splash screen, keyboard support, dark/light themes, and a lightweight design.',
-        imageUrl: '/images/calculator.jpg',
-        tags: 'PWA, JavaScript, HTML, CSS, Offline Support',
-        liveUrl: 'https://calcmate-calculate.netlify.app',
-        repoUrl: 'https://github.com/karn30chavda/CALCULATOR-PROJECT',
-      },
-      {
-        title: 'Designated Driver Service (DDS) Website',
-        description: 'Full-Stack Web App for booking professional drivers on-demand. Includes user/driver registration, role-based authentication, real-time booking, admin panel, driver background checks, responsive design, Firebase Hosting, and encrypted data storage.',
-        imageUrl: '/images/dds.jpg',
-        tags: 'Full-Stack, Firebase, JavaScript, Authentication, Real-time',
-        liveUrl: 'https://designated-driver-service.netlify.app',
-        repoUrl: 'https://github.com/karn30chavda/DRIVER-BOOKING-WEBSITE',
-      },
-      {
-        title: 'Sticky Notes PWA',
-        description: 'Secure Note-Taking App with rich text editing and PWA capabilities. Features PIN-protected notes, dark/light themes, real-time sync, profile picture upload, search/filter functionality, and responsive UI.',
-        imageUrl: '/images/stickynotes.jpg',
-        tags: 'Full-Stack, PWA, Security, Real-time Sync, JavaScript, Responsive UI',
-        liveUrl: 'https://stickynotesproject.netlify.app',
-        repoUrl: 'https://github.com/karn30chavda/STICKY-NOTE-PROJECT',
-      },
-      {
-        title: 'Tic Tac Win Game',
-        description: 'Offline-Ready Game with AI and multiplayer modes. Features a hand-drawn UI, responsive design, animated splash screen, PWA installation, and smooth animations.',
-        imageUrl: '/images/tictactoe.jpg',
-        tags: 'PWA, Game, AI, Multiplayer, JavaScript',
-        liveUrl: 'https://tictactoewinner.netlify.app',
-        repoUrl: 'https://github.com/karn30chavda/Tic-Tac-Toe-Game',
-      },
-    ];
-
-    const defaultCertificates = [
-        {
-          title: 'Responsive Web Design',
-          issuer: 'freeCodeCamp',
-          date: 'December 2023',
-          credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/responsive-web-design',
-          imageUrl: '/images/responsive-web-design.png',
-        },
-        {
-          title: 'JavaScript Algorithms and Data Structures',
-          issuer: 'freeCodeCamp',
-          date: 'December 2023',
-          credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/javascript-algorithms-and-data-structures',
-          imageUrl: '/images/javascript-algos.png',
-        }
-    ];
-
-    try {
-      const profileDocRef = doc(db, "siteConfig", "profile");
-      const aboutDocRef = doc(db, "siteConfig", "about");
-      const skillsDocRef = doc(db, "siteConfig", "skills");
-      const projectsDocRef = doc(db, "siteConfig", "projects");
-      const certificatesDocRef = doc(db, "siteConfig", "certificates");
-  
-      // Ensure documents exist
-      await Promise.all([
-          setDoc(profileDocRef, {}, { merge: true }),
-          setDoc(aboutDocRef, {}, { merge: true }),
-          setDoc(skillsDocRef, {}, { merge: true }),
-          setDoc(projectsDocRef, {}, { merge: true }),
-          setDoc(certificatesDocRef, {}, { merge: true }),
-      ]);
-  
-      const [profileDocSnap, aboutDocSnap, skillsDocSnap, projectsDocSnap, certificatesDocSnap] = await Promise.all([
-        getDoc(profileDocRef),
-        getDoc(aboutDocRef),
-        getDoc(skillsDocRef),
-        getDoc(projectsDocRef),
-        getDoc(certificatesDocRef),
-      ]);
-  
-      const profileData = profileDocSnap.data() || {};
-      const aboutData = aboutDocSnap.data() || {};
-      
-      const skillsData = skillsDocSnap.data()?.skillsData;
-      const finalSkills = skillsData && skillsData.length > 0 ? skillsData : defaultSkills;
-
-      const projectsData = projectsDocSnap.data()?.projectsData;
-      const finalProjects = projectsData && projectsData.length > 0 ? projectsData : defaultProjects;
-
-      const certificatesData = certificatesDocSnap.data()?.certificatesData;
-      const finalCertificates = certificatesData && certificatesData.length > 0 ? certificatesData : defaultCertificates;
-
-      const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
-
-My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
-
-When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.`;
-  
-      return { 
-        imageUrl: profileData.imageUrl || '/images/karanprofile.jpg',
-        name: profileData.name || 'Karan Chavda',
-        title: profileData.title || 'Creative Web Developer & UI/UX Enthusiast',
-        bio: profileData.bio || 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
-        resumeUrl: '/karanresume.pdf',
-        about: {
-          content: aboutData.content || defaultAboutContent,
-          imageUrl: aboutData.imageUrl || "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-        },
-        skills: finalSkills,
-        projects: finalProjects,
-        certificates: finalCertificates,
-      };
-      
-    } catch (error) {
-      console.error("Error fetching site data:", error);
-      return getDefaultSiteData();
+async function getDocumentData(collection: string, docId: string, fallback: any, dataKey: string) {
+    const docRef = doc(db, collection, docId);
+    // Ensure document exists with merge to avoid overwriting existing fields
+    await setDoc(docRef, {}, { merge: true });
+    const docSnap = await getDoc(docRef);
+    const data = docSnap.data();
+    if (data && data[dataKey] && Array.isArray(data[dataKey]) && data[dataKey].length > 0) {
+        return data[dataKey];
     }
-  }
+    return fallback;
+}
 
-  function getDefaultSiteData(): SiteData {
-    const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
+export async function getSiteData(): Promise<SiteData> {
+    try {
+        const profileDocRef = doc(db, "siteConfig", "profile");
+        const aboutDocRef = doc(db, "siteConfig", "about");
+        await Promise.all([
+            setDoc(profileDocRef, {}, { merge: true }),
+            setDoc(aboutDocRef, {}, { merge: true }),
+        ]);
 
-My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
+        const [profileDocSnap, aboutDocSnap] = await Promise.all([
+            getDoc(profileDocRef),
+            getDoc(aboutDocRef),
+        ]);
 
-When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.`;
+        const profileData = profileDocSnap.data() || {};
+        const aboutData = aboutDocSnap.data() || {};
 
-    const defaultSkills = [
-        {
-            category: 'Core Languages & Markup',
-            categoryIconName: 'Code2',
-            skills: [
-                { name: 'C/C++', iconName: 'FileCode2' },
-                { name: 'HTML', iconName: 'CodeXml' },
-                { name: 'CSS', iconName: 'Palette' },
-                { name: 'JavaScript', iconName: 'Braces' },
-                { name: 'SQL', iconName: 'Database' },
-            ]
-        },
-        {
-            category: 'Frameworks, Libraries & CSS Tools',
-            categoryIconName: 'Layers',
-            skills: [
-                { name: 'React', iconName: 'Atom' },
-                { name: 'Bootstrap', iconName: 'LayoutGrid' },
-                { name: 'FlexBox', iconName: 'StretchHorizontal' },
-                { name: 'Tailwind CSS', iconName: 'Wind' },
-                { name: 'Shadcn/UI', iconName: 'Component' },
-            ]
-        },
-        {
-            category: 'Development Tools & Platforms',
-            categoryIconName: 'TerminalSquare',
-            skills: [
-                { name: 'Git', iconName: 'GitFork' },
-                { name: 'GitHub', iconName: 'Github' },
-                { name: 'Visual Studio Code', iconName: 'Code2' },
-                { name: 'Netlify', iconName: 'Rocket' },
-                { name: 'Firebase Studio', iconName: 'LayoutDashboard' },
-            ]
-        },
-        {
-            category: 'Backend, BaaS & PWA',
-            categoryIconName: 'DatabaseZap',
-            skills: [
-                { name: 'Google Firebase', iconName: 'CloudCog' },
-                { name: 'Supabase', iconName: 'Server' },
-                { name: 'PWA', iconName: 'AppWindow' },
-                { name: 'Cloudinary', iconName: 'ImageUp' },
-            ]
-        },
-    ];
+        const skills = await getDocumentData("siteConfig", "skills", defaultSkills, "skills");
+        const projects = await getDocumentData("siteConfig", "projects", defaultProjects, "projects");
+        const certificates = await getDocumentData("siteConfig", "certificates", defaultCertificates, "certificates");
+        
+        return { 
+            imageUrl: profileData.imageUrl || '/images/karanprofile.jpg',
+            name: profileData.name || 'Karan Chavda',
+            title: profileData.title || 'Creative Web Developer & UI/UX Enthusiast',
+            bio: profileData.bio || "Passionate about building beautiful, functional, and user-friendly web experiences. Let's create something amazing together.",
+            resumeUrl: '/karanresume.pdf',
+            about: {
+                content: aboutData.content || defaultAboutContent,
+                imageUrl: aboutData.imageUrl || "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+            },
+            skills,
+            projects,
+            certificates,
+        };
+    } catch (error) {
+        console.error("Error fetching site data, returning defaults:", error);
+        return {
+            imageUrl: '/images/karanprofile.jpg',
+            name: 'Karan Chavda',
+            title: 'Creative Web Developer & UI/UX Enthusiast',
+            bio: "Passionate about building beautiful, functional, and user-friendly web experiences. Let's create something amazing together.",
+            resumeUrl: '/karanresume.pdf',
+            about: {
+                content: defaultAboutContent,
+                imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+            },
+            skills: defaultSkills,
+            projects: defaultProjects,
+            certificates: defaultCertificates,
+        };
+    }
+}
 
-    const defaultProjects = [
-      {
-        title: 'PWA Calculator',
-        description: 'Progressive Web App with theme toggle and calculation history. Features offline functionality, splash screen, keyboard support, dark/light themes, and a lightweight design.',
-        imageUrl: '/images/calculator.jpg',
-        tags: 'PWA, JavaScript, HTML, CSS, Offline Support',
-        liveUrl: 'https://calcmate-calculate.netlify.app',
-        repoUrl: 'https://github.com/karn30chavda/CALCULATOR-PROJECT',
-      },
-      {
-        title: 'Designated Driver Service (DDS) Website',
-        description: 'Full-Stack Web App for booking professional drivers on-demand. Includes user/driver registration, role-based authentication, real-time booking, admin panel, driver background checks, responsive design, Firebase Hosting, and encrypted data storage.',
-        imageUrl: '/images/dds.jpg',
-        tags: 'Full-Stack, Firebase, JavaScript, Authentication, Real-time',
-        liveUrl: 'https://designated-driver-service.netlify.app',
-        repoUrl: 'https://github.com/karn30chavda/DRIVER-BOOKING-WEBSITE',
-      },
-      {
-        title: 'Sticky Notes PWA',
-        description: 'Secure Note-Taking App with rich text editing and PWA capabilities. Features PIN-protected notes, dark/light themes, real-time sync, profile picture upload, search/filter functionality, and responsive UI.',
-        imageUrl: '/images/stickynotes.jpg',
-        tags: 'Full-Stack, PWA, Security, Real-time Sync, JavaScript, Responsive UI',
-        liveUrl: 'https://stickynotesproject.netlify.app',
-        repoUrl: 'https://github.com/karn30chavda/STICKY-NOTE-PROJECT',
-      },
-      {
-        title: 'Tic Tac Win Game',
-        description: 'Offline-Ready Game with AI and multiplayer modes. Features a hand-drawn UI, responsive design, animated splash screen, PWA installation, and smooth animations.',
-        imageUrl: '/images/tictactoe.jpg',
-        tags: 'PWA, Game, AI, Multiplayer, JavaScript',
-        liveUrl: 'https://tictactoewinner.netlify.app',
-        repoUrl: 'https://github.com/karn30chavda/Tic-Tac-Toe-Game',
-      },
-    ];
-
-    const defaultCertificates = [
-      {
-        title: 'Responsive Web Design',
-        issuer: 'freeCodeCamp',
-        date: 'December 2023',
-        credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/responsive-web-design',
-        imageUrl: '/images/responsive-web-design.png',
-      },
-      {
-        title: 'JavaScript Algorithms and Data Structures',
-        issuer: 'freeCodeCamp',
-        date: 'December 2023',
-        credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/javascript-algorithms-and-data-structures',
-        imageUrl: '/images/javascript-algos.png',
-      }
-    ];
-    
-    return { 
-      imageUrl: '/images/karanprofile.jpg',
-      name: 'Karan Chavda',
-      title: 'Creative Web Developer & UI/UX Enthusiast',
-      bio: 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
-      resumeUrl: '/karanresume.pdf',
-      about: {
-        content: defaultAboutContent,
-        imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      },
-      skills: defaultSkills,
-      projects: defaultProjects,
-      certificates: defaultCertificates,
-    };
-  }
-
-  // Legacy function, kept for compatibility, but new code should use getSiteData
 export async function getProfileData() {
     const data = await getSiteData();
     return {
@@ -683,7 +544,6 @@ export async function getContactSubmissions(): Promise<ContactSubmission[]> {
                 email: data.email,
                 message: data.message,
                 inquiryType: data.inquiryType,
-                // Firestore Timestamps need to be converted to a serializable format
                 submittedAt: data.submittedAt.toDate().toISOString(), 
             }
         });
