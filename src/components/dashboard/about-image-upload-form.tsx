@@ -56,8 +56,8 @@ export function AboutImageUploadForm({ currentImageUrl }: { currentImageUrl: str
   const displayImageUrl = previewUrl || currentImageUrl;
 
   return (
-    <form action={handleFormAction} className="space-y-6">
-      <div className="flex flex-col items-center gap-4">
+    <form action={handleFormAction} className="flex flex-col h-full">
+      <div className="space-y-4">
         <div className="w-full aspect-video relative rounded-lg overflow-hidden border-4 border-border shadow-md shrink-0">
           <Image
             src={displayImageUrl}

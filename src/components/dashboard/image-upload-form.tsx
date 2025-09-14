@@ -73,9 +73,9 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
   const displayImageUrl = previewUrl || currentImageUrl;
 
   return (
-    <form action={handleFormAction} className="space-y-6">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-border shadow-md shrink-0">
+    <form action={handleFormAction} className="flex flex-col h-full">
+      <div className="space-y-4">
+        <div className="w-32 h-32 relative mx-auto rounded-full overflow-hidden border-4 border-border shadow-md shrink-0">
           <Image
             src={displayImageUrl}
             alt="Profile picture preview"

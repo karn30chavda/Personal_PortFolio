@@ -140,44 +140,44 @@ export function ProjectsForm({
               <span className="sr-only">Remove Project</span>
             </Button>
             
-            <div className="flex flex-col items-center gap-4">
-              <FormLabel>Project Image</FormLabel>
-              <div className="relative w-full aspect-video rounded-md overflow-hidden border">
-                <Image
-                  src={
-                    imagePreviews[index] ||
-                    form.watch(`projectsData.${index}.imageUrl`) ||
-                    'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project'
-                  }
-                  alt="Project image"
-                  fill
-                  className="object-cover"
+            <div className="space-y-4">
+                <FormLabel>Project Image</FormLabel>
+                <div className="relative w-full aspect-video rounded-md overflow-hidden border">
+                  <Image
+                    src={
+                      imagePreviews[index] ||
+                      form.watch(`projectsData.${index}.imageUrl`) ||
+                      'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project'
+                    }
+                    alt="Project image"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name={`projectsData.${index}.imageFile` as any}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="sr-only">Image File</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
+                          onChange={(e) => {
+                            field.onChange(e.target.files)
+                            handleImageChange(e, index)
+                          }}
+                          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <FormField
-                control={form.control}
-                name={`projectsData.${index}.imageFile` as any}
-                render={({ field }) => (
-                  <FormItem className='w-full'>
-                    <FormLabel className="sr-only">Image File</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        onChange={(e) => {
-                          field.onChange(e.target.files)
-                          handleImageChange(e, index)
-                        }}
-                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             <FormField

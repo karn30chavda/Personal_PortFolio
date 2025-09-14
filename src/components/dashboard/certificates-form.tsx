@@ -137,7 +137,7 @@ export function CertificatesForm({
               <span className="sr-only">Remove Certificate</span>
             </Button>
             
-            <div className="flex flex-col items-center gap-4">
+            <div className="space-y-4">
                 <FormLabel>Certificate Image</FormLabel>
                 <div className="relative w-full aspect-video rounded-md overflow-hidden border">
                   <Image
@@ -155,7 +155,7 @@ export function CertificatesForm({
                   control={form.control}
                   name={`certificatesData.${index}.imageFile` as any} 
                   render={({ field }) => (
-                    <FormItem className='w-full'>
+                    <FormItem>
                       <FormLabel className="sr-only">Image File</FormLabel>
                       <FormControl>
                         <Input
