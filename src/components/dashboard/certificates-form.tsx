@@ -121,10 +121,11 @@ export function CertificatesForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8">
         {fields.map((certItem, index) => (
-          <div key={certItem.id} className="p-4 md:p-6 rounded-lg border bg-card/50 space-y-6">
+          <div key={certItem.id} className="p-4 md:p-6 rounded-lg border bg-card/50">
             <div className="flex justify-between items-start gap-4">
-              <div className="space-y-6 flex-grow">
-                <div className="space-y-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 flex-grow">
+                {/* Left column for image */}
+                <div className="space-y-4 lg:col-span-1">
                     <FormLabel>Certificate Image</FormLabel>
                     <div className="relative w-full aspect-video rounded-md overflow-hidden border">
                       <Image
@@ -165,68 +166,72 @@ export function CertificatesForm({
                     />
                 </div>
                 
-                <FormField
-                  control={form.control}
-                  name={`certificatesData.${index}.title`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Certificate Title</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., AWS Certified Cloud Practitioner"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`certificatesData.${index}.issuer`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Issuer</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., Amazon Web Services"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`certificatesData.${index}.date`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., October 2023" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`certificatesData.${index}.credentialUrl`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Credential URL</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://example.com/credential"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Right column for inputs */}
+                <div className="space-y-6 lg:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name={`certificatesData.${index}.title`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Certificate Title</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., AWS Certified Cloud Practitioner"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`certificatesData.${index}.issuer`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Issuer</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Amazon Web Services"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`certificatesData.${index}.date`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., October 2023" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`certificatesData.${index}.credentialUrl`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Credential URL</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://example.com/credential"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
+
               <Button
                 type="button"
                 variant="destructive"
