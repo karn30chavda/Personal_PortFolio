@@ -14,8 +14,9 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash, Loader2, Upload } from 'lucide-react';
+import { Plus, Trash, Loader2 } from 'lucide-react';
 import { useActionState, useEffect, useState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { updateProjectsData } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '../ui/textarea';
@@ -37,10 +38,10 @@ const projectsFormSchema = z.object({
 type ProjectsFormValues = z.infer<typeof projectsFormSchema>;
 
 function SubmitButton() {
-  const { formState: { isSubmitting } } = useForm<ProjectsFormValues>();
+  const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={isSubmitting}>
-      {isSubmitting ? (
+    <Button type="submit" disabled={pending}>
+      {pending ? (
         <>
           <Loader2 className="animate-spin mr-2" />
           Saving...

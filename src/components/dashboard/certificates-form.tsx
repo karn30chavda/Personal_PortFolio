@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash, Loader2, Upload } from 'lucide-react';
 import { useActionState, useEffect, useState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { updateCertificatesData } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
@@ -34,10 +35,10 @@ const certificatesFormSchema = z.object({
 type CertificatesFormValues = z.infer<typeof certificatesFormSchema>;
 
 function SubmitButton() {
-    const { formState: { isSubmitting } } = useForm<CertificatesFormValues>();
+    const { pending } = useFormStatus();
     return (
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? (
+      <Button type="submit" disabled={pending}>
+        {pending ? (
           <>
             <Loader2 className="animate-spin mr-2" />
             Saving...
