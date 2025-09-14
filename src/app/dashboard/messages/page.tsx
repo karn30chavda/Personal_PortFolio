@@ -1,5 +1,5 @@
 
-import { getContactSubmissions } from '@/lib/actions';
+import { getContactSubmissions } from '@/lib/contact-actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 
