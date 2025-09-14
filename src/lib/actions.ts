@@ -15,15 +15,23 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET 
 });
 
-async function uploadImageToCloudinary(file: File): Promise<string | null> {
-    if (!file || file.size === 0) {
+async function uploadImageToCloudinary(file: File | string): Promise<string | null> {
+    if (!file) {
       return null;
     }
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = new Uint8Array(arrayBuffer);
     
+    let image_data: string;
+    if (typeof file === 'string') {
+        image_data = file;
+    } else {
+        if (file.size === 0) return null;
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+        image_data = `data:${file.type};base64,` + Buffer.from(buffer).toString('base64');
+    }
+
     return new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream({
+        cloudinary.uploader.upload(image_data, {
             folder: 'portfolio-uploads',
         }, (error, result) => {
             if (error) {
@@ -32,7 +40,7 @@ async function uploadImageToCloudinary(file: File): Promise<string | null> {
                 return;
             }
             resolve(result?.secure_url || null);
-        }).end(buffer);
+        });
     });
 }
 
@@ -57,12 +65,12 @@ export async function logout() {
 
 export async function updateProfilePicture(prevState: any, formData: FormData) {
   try {
-    const imageFile = formData.get('image') as File;
-    if (!imageFile || imageFile.size === 0) {
-      return { success: false, message: 'No image provided.' };
+    const imageB64 = formData.get('image') as string;
+    if (!imageB64) {
+      return { success: false, message: 'No image data provided.' };
     }
     
-    const imageUrl = await uploadImageToCloudinary(imageFile);
+    const imageUrl = await uploadImageToCloudinary(imageB64);
     if (!imageUrl) {
         throw new Error('Image upload failed.');
     }

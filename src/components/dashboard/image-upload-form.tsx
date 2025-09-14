@@ -1,20 +1,19 @@
+
 "use client";
 
-import { useActionState, useState, useRef, type ChangeEvent, useTransition, useEffect } from 'react';
+import { useActionState, useState, useTransition, useEffect } from 'react';
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Edit } from 'lucide-react';
 import { updateProfilePicture } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { ImageCropperDialog } from './image-cropper-dialog';
 
 export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }) {
   const [state, formAction] = useActionState(updateProfilePicture, { success: false, message: '' });
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -24,10 +23,7 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
           title: "Success",
           description: state.message,
         });
-        setPreviewUrl(null); 
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
+        setDialogOpen(false); 
       } else {
         toast({
           title: "Error",
@@ -38,89 +34,49 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
     }
   }, [state, toast]);
 
-  const onSelectFile = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleFormAction = (formData: FormData) => {
-    if (!previewUrl) {
-      toast({
-        title: "No Image Selected",
-        description: "Please select an image to upload.",
-        variant: "destructive",
-      });
-      return;
+  const handleSave = (croppedImage: string | null) => {
+    if (!croppedImage) {
+        toast({ title: "Error", description: "Could not get cropped image.", variant: "destructive" });
+        setDialogOpen(false);
+        return;
     }
     
     startTransition(() => {
-        const file = fileInputRef.current?.files?.[0];
-        if (file) {
-            const newFormData = new FormData();
-            newFormData.append('image', file);
-            formAction(newFormData);
-        }
+        const formData = new FormData();
+        formData.append('image', croppedImage);
+        formAction(formData);
     });
   };
 
-  const displayImageUrl = previewUrl || currentImageUrl;
-
   return (
-    <form
-      action={handleFormAction}
-      className="space-y-6"
-    >
-      <div className="relative w-32 h-32 mx-auto">
-        <Image
-          src={displayImageUrl}
-          alt="Profile picture preview"
-          fill
-          className="rounded-full object-cover border-4 border-primary shadow-md"
-        />
-      </div>
+    <div className="space-y-6 text-center">
+        <div className="relative w-32 h-32 mx-auto">
+            <Image
+                src={currentImageUrl}
+                alt="Current profile picture"
+                fill
+                className="rounded-full object-cover border-4 border-primary shadow-md"
+            />
+        </div>
 
-      <div className="w-full">
-        <Label
-          htmlFor="image-upload"
-          className="sr-only"
+        <ImageCropperDialog
+            isOpen={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onSave={handleSave}
+            isSaving={isPending}
         >
-          Choose a new profile image
-        </Label>
-        <Input
-          id="image-upload"
-          name="image"
-          type="file"
-          accept="image/*"
-          onChange={onSelectFile}
-          ref={fileInputRef}
-          className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold 
-          file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-        />
-      </div>
+            <Button onClick={() => setDialogOpen(true)} variant="outline">
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Picture
+            </Button>
+        </ImageCropperDialog>
 
-      <Button
-        type="submit"
-        disabled={isPending || !previewUrl}
-        className="w-full"
-      >
-        {isPending ? (
-          <>
-            <Loader2 className="animate-spin mr-2" />
-            Uploading...
-          </>
-        ) : (
-          <>
-            <Upload className="mr-2" />
-            Confirm & Upload
-          </>
+        {isPending && (
+            <div className="flex items-center justify-center text-muted-foreground text-sm">
+                <Loader2 className="animate-spin mr-2 h-4 w-4" />
+                <span>Updating profile picture...</span>
+            </div>
         )}
-      </Button>
-    </form>
+    </div>
   );
 }
