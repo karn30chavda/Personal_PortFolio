@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -153,7 +154,7 @@ export function CertificatesForm({
                 </div>
                 <FormField
                   control={form.control}
-                  name={`certificatesData.${index}.imageFile` as any} // react-hook-form doesn't love file inputs
+                  name={`certificatesData.${index}.imageFile` as any} 
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="sr-only">Image File</FormLabel>
