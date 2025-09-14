@@ -1,18 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read access for site content, but restrict writes.
-    // Writes are handled by server actions, which should have admin privileges.
-    match /siteConfig/{docId} {
-      allow read: if true;
-      allow write: if false; // Explicitly deny writes from client
-    }
-
-    // Allow anyone to submit to the contact form.
-    // Allow only authenticated users (via server) to read/delete.
-    match /contactSubmissions/{docId} {
-      allow read, delete: if request.auth != null; // Should be handled by server-side logic
-      allow create: if true;
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
