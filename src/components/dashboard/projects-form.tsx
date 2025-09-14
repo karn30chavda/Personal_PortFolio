@@ -24,7 +24,7 @@ import Image from 'next/image';
 const projectSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
-  imageUrl: z.string().min(1, 'Image URL is. required'),
+  imageUrl: z.string().min(1, 'Image URL is required'),
   tags: z.string().min(1, 'Tags are required'),
   liveUrl: z.string().url().optional().or(z.literal('')),
   repoUrl: z.string().url().optional().or(z.literal('')),
@@ -42,6 +42,8 @@ export function ProjectsForm({
   currentProjects: ProjectsFormValues['projectsData'];
 }) {
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
+
   const form = useForm<ProjectsFormValues>({
     resolver: zodResolver(projectsFormSchema),
     defaultValues: {
@@ -55,18 +57,14 @@ export function ProjectsForm({
     name: 'projectsData',
   });
 
-  const { toast } = useToast();
-
   const [state, formAction] = useActionState(updateProjectsData, {
     success: false,
     message: '',
   });
 
-  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([]);
-
-  useEffect(() => {
-    setImagePreviews(currentProjects.map((p) => p.imageUrl || null));
-  }, [currentProjects]);
+  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>(
+    currentProjects.map((p) => p.imageUrl || null)
+  );
 
   useEffect(() => {
     if (state?.message) {
@@ -104,25 +102,27 @@ export function ProjectsForm({
     }
   };
 
-  const handleFormAction = (formData: FormData) => {
+  const onFormSubmit = (data: ProjectsFormValues) => {
     startTransition(() => {
-        const data = form.getValues();
-        formData.append('projectsData', JSON.stringify(data.projectsData));
+      const formData = new FormData();
+      formData.append('projectsData', JSON.stringify(data.projectsData));
 
-        data.projectsData.forEach((_, index) => {
-        const fileInput = document.querySelector<HTMLInputElement>(`input[name="image_${index}"]`);
+      data.projectsData.forEach((_, index) => {
+        const fileInput = document.querySelector<HTMLInputElement>(
+          `input[name="projectsData.${index}.imageFile"]`
+        );
         if (fileInput?.files?.[0]) {
-            formData.append(`image_${index}`, fileInput.files[0]);
+          formData.append(`image_${index}`, fileInput.files[0]);
         }
-        });
-        
-        formAction(formData);
+      });
+      
+      formAction(formData);
     });
   };
 
   return (
     <Form {...form}>
-      <form action={handleFormAction} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8">
         {fields.map((projectItem, index) => (
           <div
             key={projectItem.id}
@@ -156,16 +156,21 @@ export function ProjectsForm({
                 </div>
                 <FormField
                   control={form.control}
-                  name={`projectsData.${index}.imageUrl`}
-                  render={() => (
+                  name={`projectsData.${index}.imageFile` as any}
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel className="sr-only">Image File</FormLabel>
                       <FormControl>
                         <Input
                           type="file"
-                          name={`image_${index}`}
                           accept="image/*"
-                          onChange={(e) => handleImageChange(e, index)}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
+                          onChange={(e) => {
+                            field.onChange(e.target.files)
+                            handleImageChange(e, index)
+                          }}
                           className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                         />
                       </FormControl>

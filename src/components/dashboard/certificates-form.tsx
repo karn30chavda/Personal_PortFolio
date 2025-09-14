@@ -39,7 +39,8 @@ export function CertificatesForm({
   currentCertificates: CertificatesFormValues['certificatesData'];
 }) {
   const [isPending, startTransition] = useTransition();
-
+  const { toast } = useToast();
+  
   const form = useForm<CertificatesFormValues>({
     resolver: zodResolver(certificatesFormSchema),
     defaultValues: {
@@ -53,18 +54,14 @@ export function CertificatesForm({
     name: 'certificatesData',
   });
 
-  const { toast } = useToast();
-
   const [state, formAction] = useActionState(updateCertificatesData, {
     success: false,
     message: '',
   });
 
-  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([]);
-
-  useEffect(() => {
-    setImagePreviews(currentCertificates.map((c) => c.imageUrl || null));
-  }, [currentCertificates]);
+  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>(
+    currentCertificates.map((c) => c.imageUrl || null)
+  );
 
   useEffect(() => {
     if (state?.message) {
@@ -102,27 +99,27 @@ export function CertificatesForm({
     }
   };
 
-  const handleFormAction = (formData: FormData) => {
+  const onFormSubmit = (data: CertificatesFormValues) => {
     startTransition(() => {
-      const data = form.getValues();
+      const formData = new FormData();
       formData.append('certificatesData', JSON.stringify(data.certificatesData));
 
       data.certificatesData.forEach((_, index) => {
         const fileInput = document.querySelector<HTMLInputElement>(
-          `input[name="image_${index}"]`
+          `input[name="certificatesData.${index}.imageFile"]`
         );
         if (fileInput?.files?.[0]) {
           formData.append(`image_${index}`, fileInput.files[0]);
         }
       });
-
+      
       formAction(formData);
     });
   };
 
   return (
     <Form {...form}>
-      <form action={handleFormAction} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8">
         {fields.map((certItem, index) => (
           <div
             key={certItem.id}
@@ -156,16 +153,21 @@ export function CertificatesForm({
                 </div>
                 <FormField
                   control={form.control}
-                  name={`certificatesData.${index}.imageUrl`}
-                  render={() => (
+                  name={`certificatesData.${index}.imageFile` as any} // react-hook-form doesn't love file inputs
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel className="sr-only">Image File</FormLabel>
                       <FormControl>
                         <Input
                           type="file"
-                          name={`image_${index}`}
                           accept="image/*"
-                          onChange={(e) => handleImageChange(e, index)}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
+                          onChange={(e) => {
+                            field.onChange(e.target.files);
+                            handleImageChange(e, index);
+                          }}
                           className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                         />
                       </FormControl>
@@ -252,8 +254,7 @@ export function CertificatesForm({
                 title: '',
                 issuer: '',
                 date: '',
-                imageUrl:
-                  'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate',
+                imageUrl: 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate',
                 credentialUrl: '',
               });
               setImagePreviews([

@@ -7,7 +7,6 @@ import {v2 as cloudinary} from 'cloudinary';
 import { db } from "./firebase";
 import { doc, setDoc, getDoc, updateDoc, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore";
 import { z } from "zod";
-import type { ContactSubmission } from "./contact-actions";
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -15,18 +14,19 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET 
 });
 
-async function uploadImageToCloudinary(file: File) {
+async function uploadImageToCloudinary(file: File): Promise<string | null> {
     if (!file || file.size === 0) {
       return null;
     }
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
     
-    return new Promise<string | null>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream({
             folder: 'portfolio-uploads',
         }, (error, result) => {
             if (error) {
+                console.error("Cloudinary Upload Error:", error);
                 reject(error);
                 return;
             }
@@ -200,7 +200,6 @@ export async function updateSkillsData(prevState: any, formData: FormData) {
       const validatedFields = skillsFormSchema.safeParse(skillsDataJSON);
   
       if (!validatedFields.success) {
-        console.log(validatedFields.error.flatten());
         return {
           success: false,
           message: "Validation failed. Ensure all fields are filled.",
@@ -242,7 +241,6 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
     const validatedFields = projectsFormSchema.safeParse(projectsDataJSON);
 
     if (!validatedFields.success) {
-      console.log(validatedFields.error.flatten());
       return {
         success: false,
         message: "Validation failed. Ensure all fields are filled correctly.",
@@ -254,9 +252,7 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
             const imageFile = formData.get(`image_${index}`) as File;
             if (imageFile && imageFile.size > 0) {
                 const newImageUrl = await uploadImageToCloudinary(imageFile);
-                if (newImageUrl) {
-                    return { ...project, imageUrl: newImageUrl };
-                }
+                return { ...project, imageUrl: newImageUrl || project.imageUrl };
             }
             return project;
         })
@@ -296,7 +292,6 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
         const validatedFields = certificatesFormSchema.safeParse(certificatesDataJSON);
 
         if (!validatedFields.success) {
-            console.log(validatedFields.error.flatten());
             return {
                 success: false,
                 message: "Validation failed. Ensure all fields are filled correctly.",
@@ -308,9 +303,7 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
                 const imageFile = formData.get(`image_${index}`) as File;
                 if (imageFile && imageFile.size > 0) {
                     const newImageUrl = await uploadImageToCloudinary(imageFile);
-                    if (newImageUrl) {
-                        return { ...certificate, imageUrl: newImageUrl };
-                    }
+                    return { ...certificate, imageUrl: newImageUrl || certificate.imageUrl };
                 }
                 return certificate;
             })
@@ -328,6 +321,62 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
         return { success: false, message: `Failed to update certificates: ${errorMessage}` };
     }
 }
+
+const contactFormSchema = z.object({
+    name: z.string().min(1, "Name is required."),
+    email: z.string().email("Invalid email address."),
+    inquiryType: z.enum(["work-inquiry", "website-building", "general-question"]),
+    message: z.string().min(10, "Message must be at least 10 characters long."),
+});
+
+type ContactFormValues = z.infer<typeof contactFormSchema>;
+
+type ActionResult = {
+    success: boolean;
+    message?: string | null;
+    errors?: Partial<Record<keyof ContactFormValues, string[]>>;
+};
+
+export async function saveContactMessage(data: ContactFormValues): Promise<ActionResult> {
+    try {
+      const validatedFields = contactFormSchema.safeParse(data);
+  
+      if (!validatedFields.success) {
+        return {
+          success: false,
+          message: "Validation failed.",
+          errors: validatedFields.error.flatten().fieldErrors,
+        };
+      }
+  
+      await addDoc(collection(db, 'contactSubmissions'), {
+        ...validatedFields.data,
+        submittedAt: serverTimestamp(),
+      });
+  
+      revalidatePath("/dashboard/messages");
+  
+      return { success: true, message: "Your message has been sent successfully!" };
+  
+    } catch (error) {
+      console.error("Error saving contact message:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      return { success: false, message: `Failed to send message: ${errorMessage}` };
+    }
+}
+
+export type ContactSubmission = {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    inquiryType: string;
+    submittedAt: string;
+};
+
+// =================================================================
+// DATA FETCHING
+// =================================================================
 
 const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
 
@@ -446,24 +495,46 @@ type SiteData = {
     skills: z.infer<typeof skillsFormSchema>;
     projects: z.infer<typeof projectsFormSchema>;
     certificates: z.infer<typeof certificatesFormSchema>;
-  };
+};
   
 async function getDocumentData(collection: string, docId: string, fallback: any, dataKey: string) {
     const docRef = doc(db, collection, docId);
-    // Ensure document exists with merge to avoid overwriting existing fields
-    await setDoc(docRef, {}, { merge: true });
+    await setDoc(docRef, {}, { merge: true }); 
     const docSnap = await getDoc(docRef);
     const data = docSnap.data();
+
     if (data && data[dataKey] && Array.isArray(data[dataKey]) && data[dataKey].length > 0) {
         return data[dataKey];
     }
+    
+    // If no data, set the fallback and return it
+    await setDoc(docRef, { [dataKey]: fallback }, { merge: true });
     return fallback;
 }
+
+function getDefaultSiteData(): SiteData {
+    return {
+        imageUrl: '/images/karanprofile.jpg',
+        name: 'Karan Chavda',
+        title: 'Creative Web Developer & UI/UX Enthusiast',
+        bio: "Passionate about building beautiful, functional, and user-friendly web experiences. Let's create something amazing together.",
+        resumeUrl: '/karanresume.pdf',
+        about: {
+            content: defaultAboutContent,
+            imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        },
+        skills: defaultSkills,
+        projects: defaultProjects,
+        certificates: defaultCertificates,
+    };
+}
+
 
 export async function getSiteData(): Promise<SiteData> {
     try {
         const profileDocRef = doc(db, "siteConfig", "profile");
         const aboutDocRef = doc(db, "siteConfig", "about");
+        
         await Promise.all([
             setDoc(profileDocRef, {}, { merge: true }),
             setDoc(aboutDocRef, {}, { merge: true }),
@@ -497,20 +568,7 @@ export async function getSiteData(): Promise<SiteData> {
         };
     } catch (error) {
         console.error("Error fetching site data, returning defaults:", error);
-        return {
-            imageUrl: '/images/karanprofile.jpg',
-            name: 'Karan Chavda',
-            title: 'Creative Web Developer & UI/UX Enthusiast',
-            bio: "Passionate about building beautiful, functional, and user-friendly web experiences. Let's create something amazing together.",
-            resumeUrl: '/karanresume.pdf',
-            about: {
-                content: defaultAboutContent,
-                imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-            },
-            skills: defaultSkills,
-            projects: defaultProjects,
-            certificates: defaultCertificates,
-        };
+        return getDefaultSiteData();
     }
 }
 
