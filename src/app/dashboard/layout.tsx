@@ -98,8 +98,14 @@ function MobileNav({
     isNavigating: boolean; 
     handleLinkClick: (href: string) => void; 
 }) {
+    const [open, setOpen] = useState(false);
+
+    const onLinkClick = (href: string) => {
+        handleLinkClick(href);
+        setOpen(false);
+    }
     return (
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
                     <Menu className="h-5 w-5" />
@@ -108,7 +114,7 @@ function MobileNav({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 {navItems.map((item) => (
-                    <DropdownMenuItem key={item.label} disabled={isNavigating && targetPath !== item.href}>
+                    <DropdownMenuItem key={item.label} disabled={isNavigating && targetPath !== item.href} asChild>
                          <NavButtonLink
                             href={item.href}
                             label={item.label}
@@ -116,7 +122,7 @@ function MobileNav({
                             currentPath={currentPath}
                             targetPath={targetPath}
                             isNavigating={isNavigating}
-                            onClick={() => handleLinkClick(item.href)}
+                            onClick={() => onLinkClick(item.href)}
                             isMobile={true}
                         />
                     </DropdownMenuItem>
