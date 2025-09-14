@@ -2,8 +2,8 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award, Mail } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { User, Info, LogOut, ExternalLink, Menu, Wrench, FolderKanban, Award, Mail, Loader2 } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -26,7 +26,8 @@ import { logout } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggleButton } from '@/components/theme-toggle-button';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Profile', icon: <User /> },
@@ -37,7 +38,51 @@ const navItems = [
   { href: '/dashboard/messages', label: 'Messages', icon: <Mail /> },
 ];
 
-function MobileNav() {
+function NavButtonLink({
+  href,
+  label,
+  icon,
+  isActive,
+  isNavigating,
+  onClick,
+  isMobile = false,
+}: {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  isActive: boolean;
+  isNavigating: boolean;
+  onClick: () => void;
+  isMobile?: boolean;
+}) {
+  const isTarget = isNavigating && isActive;
+
+  if (isMobile) {
+    return (
+      <Link href={href} onClick={onClick} className={cn("flex items-center gap-2 w-full", (isNavigating && !isTarget) && "opacity-50 pointer-events-none")}>
+        {isTarget ? <Loader2 className="animate-spin" /> : icon}
+        <span>{label}</span>
+      </Link>
+    );
+  }
+
+  return (
+    <Link href={href} legacyBehavior passHref>
+      <SidebarMenuButton
+        isActive={isActive}
+        tooltip={label}
+        onClick={onClick}
+        disabled={isNavigating && !isTarget}
+        className={cn((isNavigating && !isTarget) && "opacity-50 pointer-events-none")}
+      >
+        {isTarget ? <Loader2 className="animate-spin" /> : icon}
+        <span className="group-data-[state=collapsed]:hidden">{label}</span>
+      </SidebarMenuButton>
+    </Link>
+  );
+}
+
+function MobileNav({ isNavigating, targetPath, handleLinkClick }: { isNavigating: boolean; targetPath: string; handleLinkClick: (href: string) => void; }) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -48,11 +93,16 @@ function MobileNav() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 {navItems.map((item) => (
-                    <DropdownMenuItem key={item.label} asChild>
-                        <Link href={item.href} className="flex items-center gap-2">
-                            {item.icon}
-                            <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
-                        </Link>
+                    <DropdownMenuItem key={item.label} asChild disabled={isNavigating}>
+                         <NavButtonLink
+                            href={item.href}
+                            label={item.label}
+                            icon={item.icon}
+                            isActive={targetPath === item.href}
+                            isNavigating={isNavigating}
+                            onClick={() => handleLinkClick(item.href)}
+                            isMobile={true}
+                        />
                     </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
@@ -75,12 +125,26 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isMobile = useIsMobile();
   const [isMounted, setIsMounted] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [targetPath, setTargetPath] = useState("");
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [pathname]);
+
+  const handleLinkClick = (href: string) => {
+    if (pathname !== href) {
+        setIsNavigating(true);
+        setTargetPath(href);
+    }
+  };
 
   if (!isMounted) {
     return <div className="h-screen w-full bg-background" />; // or a loading spinner
@@ -100,15 +164,14 @@ export default function DashboardLayout({
               <SidebarMenu>
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.label}>
-                    <Link href={item.href} legacyBehavior passHref>
-                      <SidebarMenuButton
-                        isActive={pathname === item.href}
-                        tooltip={item.label}
-                      >
-                        {item.icon}
-                        <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
-                      </SidebarMenuButton>
-                    </Link>
+                    <NavButtonLink
+                      href={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                      isActive={targetPath === item.href || pathname === item.href}
+                      isNavigating={isNavigating}
+                      onClick={() => handleLinkClick(item.href)}
+                    />
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -138,7 +201,7 @@ export default function DashboardLayout({
             
             <div className="flex items-center gap-2">
               <ThemeToggleButton />
-              {isMobile && <MobileNav />}
+              {isMobile && <MobileNav isNavigating={isNavigating} targetPath={targetPath} handleLinkClick={handleLinkClick} />}
             </div>
           </header>
           <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
