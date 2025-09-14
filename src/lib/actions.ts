@@ -1,3 +1,4 @@
+
 "use server";
 
 import { redirect } from "next/navigation";
@@ -370,6 +371,104 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
   };
   
   export async function getSiteData(): Promise<SiteData> {
+    const defaultSkills = [
+        {
+            category: 'Core Languages & Markup',
+            categoryIconName: 'Code2',
+            skills: [
+                { name: 'C/C++', iconName: 'FileCode2' },
+                { name: 'HTML', iconName: 'CodeXml' },
+                { name: 'CSS', iconName: 'Palette' },
+                { name: 'JavaScript', iconName: 'Braces' },
+                { name: 'SQL', iconName: 'Database' },
+            ]
+        },
+        {
+            category: 'Frameworks, Libraries & CSS Tools',
+            categoryIconName: 'Layers',
+            skills: [
+                { name: 'React', iconName: 'Atom' },
+                { name: 'Bootstrap', iconName: 'LayoutGrid' },
+                { name: 'FlexBox', iconName: 'StretchHorizontal' },
+                { name: 'Tailwind CSS', iconName: 'Wind' },
+                { name: 'Shadcn/UI', iconName: 'Component' },
+            ]
+        },
+        {
+            category: 'Development Tools & Platforms',
+            categoryIconName: 'TerminalSquare',
+            skills: [
+                { name: 'Git', iconName: 'GitFork' },
+                { name: 'GitHub', iconName: 'Github' },
+                { name: 'Visual Studio Code', iconName: 'Code2' },
+                { name: 'Netlify', iconName: 'Rocket' },
+                { name: 'Firebase Studio', iconName: 'LayoutDashboard' },
+            ]
+        },
+        {
+            category: 'Backend, BaaS & PWA',
+            categoryIconName: 'DatabaseZap',
+            skills: [
+                { name: 'Google Firebase', iconName: 'CloudCog' },
+                { name: 'Supabase', iconName: 'Server' },
+                { name: 'PWA', iconName: 'AppWindow' },
+                { name: 'Cloudinary', iconName: 'ImageUp' },
+            ]
+        },
+    ];
+
+    const defaultProjects = [
+      {
+        title: 'PWA Calculator',
+        description: 'Progressive Web App with theme toggle and calculation history. Features offline functionality, splash screen, keyboard support, dark/light themes, and a lightweight design.',
+        imageUrl: '/images/calculator.jpg',
+        tags: 'PWA, JavaScript, HTML, CSS, Offline Support',
+        liveUrl: 'https://calcmate-calculate.netlify.app',
+        repoUrl: 'https://github.com/karn30chavda/CALCULATOR-PROJECT',
+      },
+      {
+        title: 'Designated Driver Service (DDS) Website',
+        description: 'Full-Stack Web App for booking professional drivers on-demand. Includes user/driver registration, role-based authentication, real-time booking, admin panel, driver background checks, responsive design, Firebase Hosting, and encrypted data storage.',
+        imageUrl: '/images/dds.jpg',
+        tags: 'Full-Stack, Firebase, JavaScript, Authentication, Real-time',
+        liveUrl: 'https://designated-driver-service.netlify.app',
+        repoUrl: 'https://github.com/karn30chavda/DRIVER-BOOKING-WEBSITE',
+      },
+      {
+        title: 'Sticky Notes PWA',
+        description: 'Secure Note-Taking App with rich text editing and PWA capabilities. Features PIN-protected notes, dark/light themes, real-time sync, profile picture upload, search/filter functionality, and responsive UI.',
+        imageUrl: '/images/stickynotes.jpg',
+        tags: 'Full-Stack, PWA, Security, Real-time Sync, JavaScript, Responsive UI',
+        liveUrl: 'https://stickynotesproject.netlify.app',
+        repoUrl: 'https://github.com/karn30chavda/STICKY-NOTE-PROJECT',
+      },
+      {
+        title: 'Tic Tac Win Game',
+        description: 'Offline-Ready Game with AI and multiplayer modes. Features a hand-drawn UI, responsive design, animated splash screen, PWA installation, and smooth animations.',
+        imageUrl: '/images/tictactoe.jpg',
+        tags: 'PWA, Game, AI, Multiplayer, JavaScript',
+        liveUrl: 'https://tictactoewinner.netlify.app',
+        repoUrl: 'https://github.com/karn30chavda/Tic-Tac-Toe-Game',
+      },
+    ];
+
+    const defaultCertificates = [
+        {
+          title: 'Responsive Web Design',
+          issuer: 'freeCodeCamp',
+          date: 'December 2023',
+          credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/responsive-web-design',
+          imageUrl: '/images/responsive-web-design.png',
+        },
+        {
+          title: 'JavaScript Algorithms and Data Structures',
+          issuer: 'freeCodeCamp',
+          date: 'December 2023',
+          credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/javascript-algorithms-and-data-structures',
+          imageUrl: '/images/javascript-algos.png',
+        }
+    ];
+
     try {
       const profileDocRef = doc(db, "siteConfig", "profile");
       const aboutDocRef = doc(db, "siteConfig", "about");
@@ -433,110 +532,110 @@ When I'm not coding, you can find me exploring new technologies, contributing to
     }
   }
 
-  const defaultSkills = [
-    {
-        category: 'Core Languages & Markup',
-        categoryIconName: 'Code2',
-        skills: [
-            { name: 'C/C++', iconName: 'FileCode2' },
-            { name: 'HTML', iconName: 'CodeXml' },
-            { name: 'CSS', iconName: 'Palette' },
-            { name: 'JavaScript', iconName: 'Braces' },
-            { name: 'SQL', iconName: 'Database' },
-        ]
-    },
-    {
-        category: 'Frameworks, Libraries & CSS Tools',
-        categoryIconName: 'Layers',
-        skills: [
-            { name: 'React', iconName: 'Atom' },
-            { name: 'Bootstrap', iconName: 'LayoutGrid' },
-            { name: 'FlexBox', iconName: 'StretchHorizontal' },
-            { name: 'Tailwind CSS', iconName: 'Wind' },
-            { name: 'Shadcn/UI', iconName: 'Component' },
-        ]
-    },
-    {
-        category: 'Development Tools & Platforms',
-        categoryIconName: 'TerminalSquare',
-        skills: [
-            { name: 'Git', iconName: 'GitFork' },
-            { name: 'GitHub', iconName: 'Github' },
-            { name: 'Visual Studio Code', iconName: 'Code2' },
-            { name: 'Netlify', iconName: 'Rocket' },
-            { name: 'Firebase Studio', iconName: 'LayoutDashboard' },
-        ]
-    },
-    {
-        category: 'Backend, BaaS & PWA',
-        categoryIconName: 'DatabaseZap',
-        skills: [
-            { name: 'Google Firebase', iconName: 'CloudCog' },
-            { name: 'Supabase', iconName: 'Server' },
-            { name: 'PWA', iconName: 'AppWindow' },
-            { name: 'Cloudinary', iconName: 'ImageUp' },
-        ]
-    },
-];
-
-  const defaultProjects = [
-    {
-      title: 'PWA Calculator',
-      description: 'Progressive Web App with theme toggle and calculation history. Features offline functionality, splash screen, keyboard support, dark/light themes, and a lightweight design.',
-      imageUrl: '/images/calculator.jpg',
-      tags: 'PWA, JavaScript, HTML, CSS, Offline Support',
-      liveUrl: 'https://calcmate-calculate.netlify.app',
-      repoUrl: 'https://github.com/karn30chavda/CALCULATOR-PROJECT',
-    },
-    {
-      title: 'Designated Driver Service (DDS) Website',
-      description: 'Full-Stack Web App for booking professional drivers on-demand. Includes user/driver registration, role-based authentication, real-time booking, admin panel, driver background checks, responsive design, Firebase Hosting, and encrypted data storage.',
-      imageUrl: '/images/dds.jpg',
-      tags: 'Full-Stack, Firebase, JavaScript, Authentication, Real-time',
-      liveUrl: 'https://designated-driver-service.netlify.app',
-      repoUrl: 'https://github.com/karn30chavda/DRIVER-BOOKING-WEBSITE',
-    },
-    {
-      title: 'Sticky Notes PWA',
-      description: 'Secure Note-Taking App with rich text editing and PWA capabilities. Features PIN-protected notes, dark/light themes, real-time sync, profile picture upload, search/filter functionality, and responsive UI.',
-      imageUrl: '/images/stickynotes.jpg',
-      tags: 'Full-Stack, PWA, Security, Real-time Sync, JavaScript, Responsive UI',
-      liveUrl: 'https://stickynotesproject.netlify.app',
-      repoUrl: 'https://github.com/karn30chavda/STICKY-NOTE-PROJECT',
-    },
-    {
-      title: 'Tic Tac Win Game',
-      description: 'Offline-Ready Game with AI and multiplayer modes. Features a hand-drawn UI, responsive design, animated splash screen, PWA installation, and smooth animations.',
-      imageUrl: '/images/tictactoe.jpg',
-      tags: 'PWA, Game, AI, Multiplayer, JavaScript',
-      liveUrl: 'https://tictactoewinner.netlify.app',
-      repoUrl: 'https://github.com/karn30chavda/Tic-Tac-Toe-Game',
-    },
-  ];
-
-  const defaultCertificates = [
-    {
-      title: 'Responsive Web Design',
-      issuer: 'freeCodeCamp',
-      date: 'December 2023',
-      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/responsive-web-design',
-      imageUrl: '/images/responsive-web-design.png',
-    },
-    {
-      title: 'JavaScript Algorithms and Data Structures',
-      issuer: 'freeCodeCamp',
-      date: 'December 2023',
-      credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/javascript-algorithms-and-data-structures',
-      imageUrl: '/images/javascript-algos.png',
-    }
-  ];
-
   function getDefaultSiteData(): SiteData {
     const defaultAboutContent = `Hello! I'm a dedicated and results-oriented web developer with a knack for crafting elegant solutions to complex problems. With numbers of years of experience in the projects building, I've had the pleasure of working on a variety of projects, from small business websites to large-scale web applications.
 
 My passion lies in the intersection of design and technology. I believe that a great user experience is paramount, and I strive to create interfaces that are not only visually appealing but also intuitive and accessible to all users.
 
 When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or enjoying a good cup of coffee while planning my next adventure.`;
+
+    const defaultSkills = [
+        {
+            category: 'Core Languages & Markup',
+            categoryIconName: 'Code2',
+            skills: [
+                { name: 'C/C++', iconName: 'FileCode2' },
+                { name: 'HTML', iconName: 'CodeXml' },
+                { name: 'CSS', iconName: 'Palette' },
+                { name: 'JavaScript', iconName: 'Braces' },
+                { name: 'SQL', iconName: 'Database' },
+            ]
+        },
+        {
+            category: 'Frameworks, Libraries & CSS Tools',
+            categoryIconName: 'Layers',
+            skills: [
+                { name: 'React', iconName: 'Atom' },
+                { name: 'Bootstrap', iconName: 'LayoutGrid' },
+                { name: 'FlexBox', iconName: 'StretchHorizontal' },
+                { name: 'Tailwind CSS', iconName: 'Wind' },
+                { name: 'Shadcn/UI', iconName: 'Component' },
+            ]
+        },
+        {
+            category: 'Development Tools & Platforms',
+            categoryIconName: 'TerminalSquare',
+            skills: [
+                { name: 'Git', iconName: 'GitFork' },
+                { name: 'GitHub', iconName: 'Github' },
+                { name: 'Visual Studio Code', iconName: 'Code2' },
+                { name: 'Netlify', iconName: 'Rocket' },
+                { name: 'Firebase Studio', iconName: 'LayoutDashboard' },
+            ]
+        },
+        {
+            category: 'Backend, BaaS & PWA',
+            categoryIconName: 'DatabaseZap',
+            skills: [
+                { name: 'Google Firebase', iconName: 'CloudCog' },
+                { name: 'Supabase', iconName: 'Server' },
+                { name: 'PWA', iconName: 'AppWindow' },
+                { name: 'Cloudinary', iconName: 'ImageUp' },
+            ]
+        },
+    ];
+
+    const defaultProjects = [
+      {
+        title: 'PWA Calculator',
+        description: 'Progressive Web App with theme toggle and calculation history. Features offline functionality, splash screen, keyboard support, dark/light themes, and a lightweight design.',
+        imageUrl: '/images/calculator.jpg',
+        tags: 'PWA, JavaScript, HTML, CSS, Offline Support',
+        liveUrl: 'https://calcmate-calculate.netlify.app',
+        repoUrl: 'https://github.com/karn30chavda/CALCULATOR-PROJECT',
+      },
+      {
+        title: 'Designated Driver Service (DDS) Website',
+        description: 'Full-Stack Web App for booking professional drivers on-demand. Includes user/driver registration, role-based authentication, real-time booking, admin panel, driver background checks, responsive design, Firebase Hosting, and encrypted data storage.',
+        imageUrl: '/images/dds.jpg',
+        tags: 'Full-Stack, Firebase, JavaScript, Authentication, Real-time',
+        liveUrl: 'https://designated-driver-service.netlify.app',
+        repoUrl: 'https://github.com/karn30chavda/DRIVER-BOOKING-WEBSITE',
+      },
+      {
+        title: 'Sticky Notes PWA',
+        description: 'Secure Note-Taking App with rich text editing and PWA capabilities. Features PIN-protected notes, dark/light themes, real-time sync, profile picture upload, search/filter functionality, and responsive UI.',
+        imageUrl: '/images/stickynotes.jpg',
+        tags: 'Full-Stack, PWA, Security, Real-time Sync, JavaScript, Responsive UI',
+        liveUrl: 'https://stickynotesproject.netlify.app',
+        repoUrl: 'https://github.com/karn30chavda/STICKY-NOTE-PROJECT',
+      },
+      {
+        title: 'Tic Tac Win Game',
+        description: 'Offline-Ready Game with AI and multiplayer modes. Features a hand-drawn UI, responsive design, animated splash screen, PWA installation, and smooth animations.',
+        imageUrl: '/images/tictactoe.jpg',
+        tags: 'PWA, Game, AI, Multiplayer, JavaScript',
+        liveUrl: 'https://tictactoewinner.netlify.app',
+        repoUrl: 'https://github.com/karn30chavda/Tic-Tac-Toe-Game',
+      },
+    ];
+
+    const defaultCertificates = [
+      {
+        title: 'Responsive Web Design',
+        issuer: 'freeCodeCamp',
+        date: 'December 2023',
+        credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/responsive-web-design',
+        imageUrl: '/images/responsive-web-design.png',
+      },
+      {
+        title: 'JavaScript Algorithms and Data Structures',
+        issuer: 'freeCodeCamp',
+        date: 'December 2023',
+        credentialUrl: 'https://www.freecodecamp.org/certification/KaranChavda/javascript-algorithms-and-data-structures',
+        imageUrl: '/images/javascript-algos.png',
+      }
+    ];
     
     return { 
       imageUrl: '/images/karanprofile.jpg',
