@@ -136,7 +136,7 @@ export function ImageCropperDialog({ onSave, isSaving }: ImageCropperDialogProps
           </div>
         )}
       </div>
-      <DialogFooter>
+      <DialogFooter className="gap-2 sm:space-x-2">
           <DialogClose asChild>
               <Button type="button" variant="secondary">Cancel</Button>
           </DialogClose>
