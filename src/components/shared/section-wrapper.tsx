@@ -38,7 +38,7 @@ export function SectionWrapper({
           {title}
         </h2>
       )}
-      <div className={cn(contentClassName)}>
+      <div className={cn('mx-auto', contentClassName)}>
         {children}
       </div>
     </section>
