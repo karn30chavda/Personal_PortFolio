@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -16,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash, Loader2, Upload } from 'lucide-react';
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { updateProjectsData } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '../ui/textarea';
@@ -59,9 +58,10 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
     defaultValues: {
       projectsData: currentProjects || [],
     },
+    mode: 'onBlur'
   });
 
-  const { fields, append, remove, setValue } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'projectsData',
   });
@@ -70,10 +70,18 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
   
   const [state, formAction] = useActionState(updateProjectsData, { success: false, message: '' });
 
+  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([]);
+
+  useEffect(() => {
+    setImagePreviews(currentProjects.map(p => p.imageUrl || null));
+  }, [currentProjects]);
+
   useEffect(() => {
     if (state?.message) {
       if (state.success) {
-        form.reset({ projectsData: JSON.parse(state.data || '[]') });
+        const newData = JSON.parse(state.data || '[]');
+        form.reset({ projectsData: newData });
+        setImagePreviews(newData.map((p: any) => p.imageUrl || null));
         toast({
           title: 'Success',
           description: state.message,
@@ -88,35 +96,23 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
     }
   }, [state, toast, form]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const newPreviews = [...imagePreviews];
+        newPreviews[index] = reader.result as string;
+        setImagePreviews(newPreviews);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleFormAction = (formData: FormData) => {
     const data = form.getValues();
     formData.append('projectsData', JSON.stringify(data.projectsData));
     formAction(formData);
-  };
-  
-  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const handleImageUpload = async (file: File, index: number) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
-    formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
-
-    try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
-            method: 'POST',
-            body: formData,
-        });
-        const data = await response.json();
-        if(data.secure_url) {
-            setValue(`projectsData.${index}.imageUrl`, data.secure_url);
-            toast({ title: 'Success', description: 'Image uploaded successfully' });
-        } else {
-            throw new Error('Image upload failed');
-        }
-    } catch (error) {
-        toast({ title: 'Error', description: 'Image upload failed', variant: 'destructive' });
-    }
   };
 
 
@@ -149,38 +145,30 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
                     <FormLabel>Project Image</FormLabel>
                     <div className="relative w-full aspect-video rounded-md overflow-hidden border">
                         <Image
-                            src={form.watch(`projectsData.${index}.imageUrl`) || '/images/placeholder.png'}
+                            src={imagePreviews[index] || form.watch(`projectsData.${index}.imageUrl`) || '/images/placeholder.png'}
                             alt="Project image"
                             fill
                             className="object-cover"
                         />
                     </div>
-                    <Button type='button' variant='outline' className='w-full' onClick={() => fileInputRefs.current[index]?.click()}>
-                        <Upload className='mr-2 h-4 w-4' />
-                        Upload Image
-                    </Button>
-                    <Input 
-                        type="file" 
-                        className="hidden" 
-                        ref={el => fileInputRefs.current[index] = el}
-                        onChange={(e) => {
-                            if(e.target.files?.[0]) {
-                                handleImageUpload(e.target.files[0], index);
-                            }
-                        }}
-                    />
                     <FormField
-                        control={form.control}
-                        name={`projectsData.${index}.imageUrl`}
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel className='sr-only'>Image URL</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Image URL" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
+                      control={form.control}
+                      name={`projectsData.${index}.imageUrl`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='sr-only'>Image File</FormLabel>
+                          <FormControl>
+                             <Input 
+                              type="file" 
+                              name={`image_${index}`}
+                              accept="image/*"
+                              onChange={(e) => handleImageChange(e, index)}
+                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                 </div>
 
@@ -262,7 +250,10 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ title: '', description: '', imageUrl: 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project', tags: '', liveUrl: '', repoUrl: '' })}
+            onClick={() => {
+              append({ title: '', description: '', imageUrl: 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project', tags: '', liveUrl: '', repoUrl: '' });
+              setImagePreviews([...imagePreviews, 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project' ]);
+            }}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Project

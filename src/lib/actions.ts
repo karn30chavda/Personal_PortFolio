@@ -7,12 +7,33 @@ import {v2 as cloudinary} from 'cloudinary';
 import { db } from "./firebase";
 import { doc, setDoc, getDoc, updateDoc, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore";
 import { z } from "zod";
+import type { ContactSubmission } from "./contact-actions";
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
   api_key: process.env.CLOUDINARY_API_KEY, 
   api_secret: process.env.CLOUDINARY_API_SECRET 
 });
+
+async function uploadImageToCloudinary(file: File) {
+    if (!file || file.size === 0) {
+      return null;
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = new Uint8Array(arrayBuffer);
+    
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream({
+            folder: 'portfolio-uploads',
+        }, (error, result) => {
+            if (error) {
+                reject(error);
+                return;
+            }
+            resolve(result?.secure_url);
+        }).end(buffer);
+    });
+}
 
 export async function login(prevState: { error: string | undefined }, formData: FormData) {
   const password = formData.get("password");
@@ -46,7 +67,7 @@ export async function updateProfilePicture(prevState: any, formData: FormData) {
     const results = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream({
         folder: 'portfolio-profile',
-        width: 500, // For consistency, let's resize to a square
+        width: 500,
         height: 500,
         crop: 'fill',
         gravity: 'face',
@@ -256,12 +277,23 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
       };
     }
     
-    await setDoc(doc(db, "siteConfig", "projects"), { projectsData: validatedFields.data });
+    const updatedProjects = await Promise.all(
+        validatedFields.data.map(async (project, index) => {
+            const imageFile = formData.get(`image_${index}`) as File;
+            if (imageFile && imageFile.size > 0) {
+                const newImageUrl = await uploadImageToCloudinary(imageFile) as string;
+                return { ...project, imageUrl: newImageUrl };
+            }
+            return project;
+        })
+    );
+
+    await setDoc(doc(db, "siteConfig", "projects"), { projectsData: updatedProjects });
 
     revalidatePath("/");
     revalidatePath("/dashboard/projects");
 
-    return { success: true, message: "Projects section updated successfully!", data: JSON.stringify(validatedFields.data) };
+    return { success: true, message: "Projects section updated successfully!", data: JSON.stringify(updatedProjects) };
   } catch (error) {
     console.error("Error updating projects data:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
@@ -283,7 +315,7 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
     try {
         const certificatesDataString = formData.get('certificatesData') as string;
         if (!certificatesDataString) {
-        return { success: false, message: 'No certificates data provided.' };
+          return { success: false, message: 'No certificates data provided.' };
         }
 
         const certificatesDataJSON = JSON.parse(certificatesDataString);
@@ -297,12 +329,23 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
             };
         }
         
-        await setDoc(doc(db, "siteConfig", "certificates"), { certificatesData: validatedFields.data });
+        const updatedCertificates = await Promise.all(
+            validatedFields.data.map(async (certificate, index) => {
+                const imageFile = formData.get(`image_${index}`) as File;
+                if (imageFile && imageFile.size > 0) {
+                    const newImageUrl = await uploadImageToCloudinary(imageFile) as string;
+                    return { ...certificate, imageUrl: newImageUrl };
+                }
+                return certificate;
+            })
+        );
+        
+        await setDoc(doc(db, "siteConfig", "certificates"), { certificatesData: updatedCertificates });
 
         revalidatePath("/");
         revalidatePath("/dashboard/certificates");
 
-        return { success: true, message: "Certificates section updated successfully!", data: JSON.stringify(validatedFields.data) };
+        return { success: true, message: "Certificates section updated successfully!", data: JSON.stringify(updatedCertificates) };
     } catch (error) {
         console.error("Error updating certificates data:", error);
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
@@ -523,15 +566,6 @@ export async function getProfileData() {
         about: data.about
     }
 }
-
-export type ContactSubmission = {
-    id: string;
-    name: string;
-    email: string;
-    message: string;
-    inquiryType: string;
-    submittedAt: string;
-};
 
 export async function getContactSubmissions(): Promise<ContactSubmission[]> {
     try {

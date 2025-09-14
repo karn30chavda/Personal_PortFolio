@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -15,8 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash, Loader2, Upload } from 'lucide-react';
-import { useActionState, useEffect, useRef, useState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect, useState } from 'react';
 import { updateCertificatesData } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
@@ -36,10 +34,10 @@ const certificatesFormSchema = z.object({
 type CertificatesFormValues = z.infer<typeof certificatesFormSchema>;
 
 function SubmitButton() {
-    const { pending } = useFormStatus();
+    const { formState: { isSubmitting } } = useForm<CertificatesFormValues>();
     return (
-      <Button type="submit" disabled={pending}>
-        {pending ? (
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? (
           <>
             <Loader2 className="animate-spin mr-2" />
             Saving...
@@ -57,9 +55,10 @@ export function CertificatesForm({ currentCertificates }: { currentCertificates:
     defaultValues: {
       certificatesData: currentCertificates || [],
     },
+    mode: 'onBlur',
   });
 
-  const { fields, append, remove, setValue } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'certificatesData',
   });
@@ -67,12 +66,19 @@ export function CertificatesForm({ currentCertificates }: { currentCertificates:
   const { toast } = useToast();
   
   const [state, formAction] = useActionState(updateCertificatesData, { success: false, message: '' });
-  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([]);
+
+  useEffect(() => {
+    setImagePreviews(currentCertificates.map(c => c.imageUrl || null));
+  }, [currentCertificates]);
+  
   useEffect(() => {
     if (state?.message) {
       if (state.success) {
-        form.reset({ certificatesData: JSON.parse(state.data || '[]') });
+        const newData = JSON.parse(state.data || '[]');
+        form.reset({ certificatesData: newData });
+        setImagePreviews(newData.map((c: any) => c.imageUrl || null));
         toast({
           title: 'Success',
           description: state.message,
@@ -87,33 +93,23 @@ export function CertificatesForm({ currentCertificates }: { currentCertificates:
     }
   }, [state, toast, form]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const newPreviews = [...imagePreviews];
+        newPreviews[index] = reader.result as string;
+        setImagePreviews(newPreviews);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleFormAction = (formData: FormData) => {
     const data = form.getValues();
     formData.append('certificatesData', JSON.stringify(data.certificatesData));
     formAction(formData);
-  };
-
-  const handleImageUpload = async (file: File, index: number) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
-    formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
-
-    try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
-            method: 'POST',
-            body: formData,
-        });
-        const data = await response.json();
-        if(data.secure_url) {
-            setValue(`certificatesData.${index}.imageUrl`, data.secure_url);
-            toast({ title: 'Success', description: 'Image uploaded successfully' });
-        } else {
-            throw new Error('Image upload failed');
-        }
-    } catch (error) {
-        toast({ title: 'Error', description: 'Image upload failed', variant: 'destructive' });
-    }
   };
 
   return (
@@ -145,25 +141,30 @@ export function CertificatesForm({ currentCertificates }: { currentCertificates:
                     <FormLabel>Certificate Image</FormLabel>
                     <div className="relative w-full aspect-video rounded-md overflow-hidden border">
                         <Image
-                            src={form.watch(`certificatesData.${index}.imageUrl`) || '/images/placeholder.png'}
+                            src={imagePreviews[index] || form.watch(`certificatesData.${index}.imageUrl`) || '/images/placeholder.png'}
                             alt="Certificate image"
                             fill
                             className="object-cover"
                         />
                     </div>
-                    <Button type='button' variant='outline' className='w-full' onClick={() => fileInputRefs.current[index]?.click()}>
-                        <Upload className='mr-2 h-4 w-4' />
-                        Upload Image
-                    </Button>
-                    <Input 
-                        type="file" 
-                        className="hidden" 
-                        ref={el => fileInputRefs.current[index] = el}
-                        onChange={(e) => {
-                            if(e.target.files?.[0]) {
-                                handleImageUpload(e.target.files[0], index);
-                            }
-                        }}
+                     <FormField
+                      control={form.control}
+                      name={`certificatesData.${index}.imageUrl`} // This is just for the schema, the file input below is what matters
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='sr-only'>Image File</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="file" 
+                              name={`image_${index}`}
+                              accept="image/*"
+                              onChange={(e) => handleImageChange(e, index)}
+                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                 </div>
                 <div className="md:col-span-2 space-y-4">
@@ -230,7 +231,10 @@ export function CertificatesForm({ currentCertificates }: { currentCertificates:
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ title: '', issuer: '', date: '', imageUrl: 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate', credentialUrl: '' })}
+            onClick={() => {
+              append({ title: '', issuer: '', date: '', imageUrl: 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate', credentialUrl: '' });
+              setImagePreviews([...imagePreviews, 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate' ]);
+            }}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Certificate
