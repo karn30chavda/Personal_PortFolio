@@ -37,29 +37,18 @@ const projectsFormSchema = z.object({
 
 type ProjectsFormValues = z.infer<typeof projectsFormSchema>;
 
-function SubmitButton() {
+export function ProjectsForm({
+  currentProjects,
+}: {
+  currentProjects: ProjectsFormValues['projectsData'];
+}) {
   const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? (
-        <>
-          <Loader2 className="animate-spin mr-2" />
-          Saving...
-        </>
-      ) : (
-        'Save Changes'
-      )}
-    </Button>
-  );
-}
-
-export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFormValues['projectsData'] }) {
   const form = useForm<ProjectsFormValues>({
     resolver: zodResolver(projectsFormSchema),
     defaultValues: {
       projectsData: currentProjects || [],
     },
-    mode: 'onBlur'
+    mode: 'onBlur',
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -68,13 +57,16 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
   });
 
   const { toast } = useToast();
-  
-  const [state, formAction] = useActionState(updateProjectsData, { success: false, message: '' });
+
+  const [state, formAction] = useActionState(updateProjectsData, {
+    success: false,
+    message: '',
+  });
 
   const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([]);
 
   useEffect(() => {
-    setImagePreviews(currentProjects.map(p => p.imageUrl || null));
+    setImagePreviews(currentProjects.map((p) => p.imageUrl || null));
   }, [currentProjects]);
 
   useEffect(() => {
@@ -97,7 +89,10 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
     }
   }, [state, toast, form]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -113,136 +108,155 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
   const handleFormAction = (formData: FormData) => {
     const data = form.getValues();
     formData.append('projectsData', JSON.stringify(data.projectsData));
+
+    // Manually append files to formData for the server action
+    data.projectsData.forEach((_, index) => {
+      const fileInput = document.querySelector<HTMLInputElement>(`input[name="image_${index}"]`);
+      if (fileInput?.files?.[0]) {
+        formData.append(`image_${index}`, fileInput.files[0]);
+      }
+    });
+    
     formAction(formData);
   };
 
-
   return (
     <Form {...form}>
-      <form
-        action={handleFormAction}
-        className="space-y-8"
-      >
-        <input
-            type="hidden"
-            {...form.register('projectsData')}
-            value={JSON.stringify(form.watch('projectsData'))}
-        />
+      <form action={handleFormAction} className="space-y-8">
         {fields.map((projectItem, index) => (
-          <div key={projectItem.id} className="p-4 md:p-6 rounded-lg border bg-card/50 space-y-6 relative">
+          <div
+            key={projectItem.id}
+            className="p-4 md:p-6 rounded-lg border bg-card/50 space-y-6 relative"
+          >
             <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => remove(index)}
-                className="absolute -top-3 -right-3 shrink-0 z-10"
-              >
-                <Trash className="h-4 w-4" />
-                <span className="sr-only">Remove Project</span>
+              type="button"
+              variant="destructive"
+              size="icon"
+              onClick={() => remove(index)}
+              className="absolute -top-3 -right-3 shrink-0 z-10"
+            >
+              <Trash className="h-4 w-4" />
+              <span className="sr-only">Remove Project</span>
             </Button>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-1 space-y-2">
-                    <FormLabel>Project Image</FormLabel>
-                    <div className="relative w-full aspect-video rounded-md overflow-hidden border">
-                        <Image
-                            src={imagePreviews[index] || form.watch(`projectsData.${index}.imageUrl`) || '/images/placeholder.png'}
-                            alt="Project image"
-                            fill
-                            className="object-cover"
-                        />
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name={`projectsData.${index}.imageUrl`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='sr-only'>Image File</FormLabel>
-                          <FormControl>
-                             <Input 
-                              type="file" 
-                              name={`image_${index}`}
-                              accept="image/*"
-                              onChange={(e) => handleImageChange(e, index)}
-                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <div className="md:col-span-1 space-y-2">
+                <FormLabel>Project Image</FormLabel>
+                <div className="relative w-full aspect-video rounded-md overflow-hidden border">
+                  <Image
+                    src={
+                      imagePreviews[index] ||
+                      form.watch(`projectsData.${index}.imageUrl`) ||
+                      '/images/placeholder.png'
+                    }
+                    alt="Project image"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
+                <FormField
+                  control={form.control}
+                  name={`projectsData.${index}.imageUrl`}
+                  render={() => (
+                    <FormItem>
+                      <FormLabel className="sr-only">Image File</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          name={`image_${index}`}
+                          accept="image/*"
+                          onChange={(e) => handleImageChange(e, index)}
+                          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                <div className="md:col-span-2 space-y-4">
-                    <FormField
-                    control={form.control}
-                    name={`projectsData.${index}.title`}
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Project Title</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., PWA Calculator" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name={`projectsData.${index}.description`}
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                            <Textarea placeholder="Describe the project" {...field} className='min-h-[100px]'/>
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                     <FormField
-                    control={form.control}
-                    name={`projectsData.${index}.tags`}
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Tags</FormLabel>
-                        <FormControl>
-                            <Input placeholder="PWA, JavaScript, HTML" {...field} />
-                        </FormControl>
-                        <FormDescription>Comma-separated list of tags.</FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                        <FormField
-                            control={form.control}
-                            name={`projectsData.${index}.liveUrl`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Live URL</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="https://example.com" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
+              <div className="md:col-span-2 space-y-4">
+                <FormField
+                  control={form.control}
+                  name={`projectsData.${index}.title`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Title</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., PWA Calculator"
+                          {...field}
                         />
-                        <FormField
-                            control={form.control}
-                            name={`projectsData.${index}.repoUrl`}
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Repo URL</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="https://github.com/user/repo" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`projectsData.${index}.description`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Describe the project"
+                          {...field}
+                          className="min-h-[100px]"
                         />
-                    </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`projectsData.${index}.tags`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags</FormLabel>
+                      <FormControl>
+                        <Input placeholder="PWA, JavaScript, HTML" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Comma-separated list of tags.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`projectsData.${index}.liveUrl`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Live URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`projectsData.${index}.repoUrl`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Repo URL</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://github.com/user/repo"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
+              </div>
             </div>
           </div>
         ))}
@@ -252,14 +266,34 @@ export function ProjectsForm({ currentProjects }: { currentProjects: ProjectsFor
             type="button"
             variant="outline"
             onClick={() => {
-              append({ title: '', description: '', imageUrl: 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project', tags: '', liveUrl: '', repoUrl: '' });
-              setImagePreviews([...imagePreviews, 'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project' ]);
+              append({
+                title: '',
+                description: '',
+                imageUrl:
+                  'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project',
+                tags: '',
+                liveUrl: '',
+                repoUrl: '',
+              });
+              setImagePreviews([
+                ...imagePreviews,
+                'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Project',
+              ]);
             }}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Project
           </Button>
-          <SubmitButton />
+          <Button type="submit" disabled={pending}>
+            {pending ? (
+              <>
+                <Loader2 className="animate-spin mr-2" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
+          </Button>
         </div>
       </form>
     </Form>
