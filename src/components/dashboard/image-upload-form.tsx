@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useActionState, useState, useRef, type ChangeEvent, useTransition, useEffect } from 'react';
@@ -73,44 +72,55 @@ export function ImageUploadForm({ currentImageUrl }: { currentImageUrl: string }
   const displayImageUrl = previewUrl || currentImageUrl;
 
   return (
-    <form action={handleFormAction} className="flex flex-col h-full">
-      <div className="space-y-4">
-        <div className="w-32 h-32 relative mx-auto rounded-full overflow-hidden border-4 border-border shadow-md shrink-0">
-          <Image
-            src={displayImageUrl}
-            alt="Profile picture preview"
-            fill
-            className="object-cover"
-          />
-        </div>
-        <div className="w-full">
-            <Label htmlFor="image-upload" className="sr-only">Choose a new profile image</Label>
-            <Input
-              id="image-upload"
-              name="image"
-              type="file"
-              accept="image/*"
-              onChange={onSelectFile}
-              ref={fileInputRef}
-              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-            />
-        </div>
+    <form
+      action={handleFormAction}
+      className="space-y-6"
+    >
+      <div className="relative w-32 h-32 mx-auto">
+        <Image
+          src={displayImageUrl}
+          alt="Profile picture preview"
+          fill
+          className="rounded-full object-cover border-4 border-primary shadow-md"
+        />
       </div>
-      <div className="mt-auto pt-6">
-        <Button type="submit" disabled={isPending || !previewUrl} className="w-full">
-          {isPending ? (
-            <>
-              <Loader2 className="animate-spin mr-2" />
-              Uploading...
-            </>
-          ) : (
-            <>
-              <Upload className="mr-2 h-4 w-4" />
-              Confirm & Upload
-            </>
-          )}
-        </Button>
+
+      <div className="w-full">
+        <Label
+          htmlFor="image-upload"
+          className="sr-only"
+        >
+          Choose a new profile image
+        </Label>
+        <Input
+          id="image-upload"
+          name="image"
+          type="file"
+          accept="image/*"
+          onChange={onSelectFile}
+          ref={fileInputRef}
+          className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold 
+          file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+        />
       </div>
+
+      <Button
+        type="submit"
+        disabled={isPending || !previewUrl}
+        className="w-full"
+      >
+        {isPending ? (
+          <>
+            <Loader2 className="animate-spin mr-2" />
+            Uploading...
+          </>
+        ) : (
+          <>
+            <Upload className="mr-2" />
+            Confirm & Upload
+          </>
+        )}
+      </Button>
     </form>
   );
 }

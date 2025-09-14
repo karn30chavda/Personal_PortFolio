@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -171,7 +170,8 @@ export function ProjectsForm({
                             field.onChange(e.target.files)
                             handleImageChange(e, index)
                           }}
-                          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                          className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold 
+                          file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                         />
                       </FormControl>
                       <FormMessage />
@@ -281,7 +281,7 @@ export function ProjectsForm({
               ]);
             }}
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2" />
             Add Project
           </Button>
           <Button type="submit" disabled={isPending}>
