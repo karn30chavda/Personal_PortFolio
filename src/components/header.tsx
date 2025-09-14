@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, Info, Briefcase, Wrench, FolderKanban, Mail } from 'lucide-react';
+import { Menu, Info, Briefcase, Wrench, FolderKanban, Mail, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggleButton } from '@/components/theme-toggle-button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -18,6 +18,7 @@ const navLinks = [
   { href: '#about', label: 'About', icon: <Info className="mr-2 h-4 w-4" /> },
   { href: '#experience', label: 'Experience', icon: <Briefcase className="mr-2 h-4 w-4" /> },
   { href: '#skills', label: 'Skills', icon: <Wrench className="mr-2 h-4 w-4" /> },
+  { href: '#certificates', label: 'Certificates', icon: <Award className="mr-2 h-4 w-4" /> },
   { href: '#projects', label: 'Projects', icon: <FolderKanban className="mr-2 h-4 w-4" /> },
   { href: '#contact', label: 'Contact', icon: <Mail className="mr-2 h-4 w-4" /> },
 ];
