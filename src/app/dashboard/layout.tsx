@@ -63,8 +63,8 @@ function NavButtonLink({
 
   if (isMobile) {
     return (
-      <Link href={href} onClick={onClick} className={cn("flex items-center gap-2 w-full", isDisabled && "opacity-50 pointer-events-none")}>
-        {isTarget ? <Loader2 className="animate-spin" /> : icon}
+      <Link href={href} onClick={onClick} className={cn("flex items-center w-full", isDisabled && "opacity-50 pointer-events-none")}>
+        {isTarget ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : React.cloneElement(icon as React.ReactElement, { className: "mr-2 h-4 w-4" })}
         <span>{label}</span>
       </Link>
     );
@@ -107,7 +107,7 @@ function MobileNav({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 {navItems.map((item) => (
-                    <DropdownMenuItem key={item.label} asChild disabled={isNavigating}>
+                    <DropdownMenuItem key={item.label} disabled={isNavigating && targetPath !== item.href}>
                          <NavButtonLink
                             href={item.href}
                             label={item.label}
@@ -123,8 +123,8 @@ function MobileNav({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <form action={logout} className="w-full">
-                        <button type="submit" className="w-full flex items-center text-red-500 gap-2">
-                            <LogOut />
+                        <button type="submit" className="w-full flex items-center text-red-500 hover:text-red-500/90 gap-2">
+                            <LogOut className="mr-2 h-4 w-4" />
                             <span>Logout</span>
                         </button>
                     </form>
