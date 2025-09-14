@@ -1,8 +1,9 @@
 
 import { getContactSubmissions } from '@/lib/actions';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { DeleteMessageButton } from '@/components/dashboard/delete-message-button';
 
 function formatInquiryType(type: string) {
     switch (type) {
@@ -40,7 +41,7 @@ export default async function DashboardMessagesPage() {
       ) : (
         <div className="space-y-6">
           {messages.map((message) => (
-            <Card key={message.id} className="p-0 md:bg-white/70 md:dark:bg-gray-900/50 md:backdrop-blur-md md:rounded-2xl md:border md:border-gray-200 md:dark:border-gray-800 md:shadow-sm md:hover:shadow-md md:transition-shadow">
+            <Card key={message.id} className="p-0 md:bg-white/70 md:dark:bg-gray-900/50 md:backdrop-blur-md md:rounded-2xl md:border md:border-gray-200 md:dark:border-gray-800 md:shadow-sm md:hover:shadow-md md:transition-shadow flex flex-col">
               <CardHeader>
                 <div className='flex justify-between items-start gap-4'>
                     <div>
@@ -61,9 +62,12 @@ export default async function DashboardMessagesPage() {
                     </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-grow">
                 <p className="text-sm text-foreground/80 whitespace-pre-wrap">{message.message}</p>
               </CardContent>
+              <CardFooter className="bg-muted/50 dark:bg-muted/20 px-6 py-3 flex justify-end mt-4">
+                <DeleteMessageButton messageId={message.id} />
+              </CardFooter>
             </Card>
           ))}
         </div>

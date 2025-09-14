@@ -5,7 +5,7 @@ import { getSession, setSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import {v2 as cloudinary} from 'cloudinary';
 import { db } from "./firebase";
-import { doc, setDoc, getDoc, updateDoc, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, collection, addDoc, serverTimestamp, getDocs, query, orderBy, deleteDoc } from "firebase/firestore";
 import { z } from "zod";
 
 cloudinary.config({ 
@@ -220,21 +220,23 @@ export async function updateSkillsData(prevState: any, formData: FormData) {
   }
 
 const projectSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  imageUrl: z.string().min(1, 'Image URL is required'),
-  tags: z.string().min(1, 'Tags are required'),
-  liveUrl: z.string().url().optional().or(z.literal('')),
-  repoUrl: z.string().url().optional().or(z.literal('')),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  imageUrl: z.string().optional(),
+  tags: z.string().min(1, "Tags are required"),
+  liveUrl: z.string().url().optional().or(z.literal("")),
+  repoUrl: z.string().url().optional().or(z.literal("")),
 });
 
-const projectsFormSchema = z.array(projectSchema);
+const projectsFormSchema = z.object({
+  projectsData: z.array(projectSchema),
+});
 
 export async function updateProjectsData(prevState: any, formData: FormData) {
   try {
-    const projectsDataString = formData.get('projectsData') as string;
+    const projectsDataString = formData.get("projectsData") as string;
     if (!projectsDataString) {
-      return { success: false, message: 'No projects data provided.' };
+      return { success: false, message: "No projects data provided." };
     }
 
     const projectsDataJSON = JSON.parse(projectsDataString);
@@ -246,133 +248,126 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
         message: "Validation failed. Ensure all fields are filled correctly.",
       };
     }
-    
+
     const updatedProjects = await Promise.all(
-        validatedFields.data.map(async (project, index) => {
-            const imageFile = formData.get(`image_${index}`) as File;
-            if (imageFile && imageFile.size > 0) {
-                const newImageUrl = await uploadImageToCloudinary(imageFile);
-                return { ...project, imageUrl: newImageUrl || project.imageUrl };
-            }
-            return project;
-        })
+      validatedFields.data.projectsData.map(async (project, index) => {
+        const imageFile = formData.get(`image_${index}`) as File;
+        if (imageFile && imageFile.size > 0) {
+          const newImageUrl = await uploadImageToCloudinary(imageFile);
+          return { ...project, imageUrl: newImageUrl || project.imageUrl };
+        }
+        return project;
+      })
     );
 
-    await setDoc(doc(db, "siteConfig", "projects"), { projects: updatedProjects });
+    await setDoc(doc(db, "siteConfig", "projects"), {
+      projects: updatedProjects,
+    });
 
     revalidatePath("/");
     revalidatePath("/dashboard/projects");
 
-    return { success: true, message: "Projects section updated successfully!", data: JSON.stringify(updatedProjects) };
+    return {
+      success: true,
+      message: "Projects section updated successfully!",
+      data: JSON.stringify(updatedProjects),
+    };
   } catch (error) {
     console.error("Error updating projects data:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { success: false, message: `Failed to update projects: ${errorMessage}` };
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred.";
+    return {
+      success: false,
+      message: `Failed to update projects: ${errorMessage}`,
+    };
   }
 }
 
 const certificateSchema = z.object({
-    title: z.string().min(1, 'Title is required'),
-    issuer: z.string().min(1, 'Issuer is required'),
-    date: z.string().min(1, 'Date is required'),
-    imageUrl: z.string().optional(),
-    credentialUrl: z.string().url().optional().or(z.literal('')),
+  title: z.string().min(1, "Title is required"),
+  issuer: z.string().min(1, "Issuer is required"),
+  date: z.string().min(1, "Date is required"),
+  imageUrl: z.string().optional(),
+  credentialUrl: z.string().url().optional().or(z.literal("")),
 });
-  
-const certificatesFormSchema = z.array(certificateSchema);
+
+const certificatesFormSchema = z.object({
+  certificatesData: z.array(certificateSchema),
+});
 
 export async function updateCertificatesData(prevState: any, formData: FormData) {
-    try {
-        const certificatesDataString = formData.get('certificatesData') as string;
-        if (!certificatesDataString) {
-          return { success: false, message: 'No certificates data provided.' };
-        }
-
-        const certificatesDataJSON = JSON.parse(certificatesDataString);
-        const validatedFields = certificatesFormSchema.safeParse(certificatesDataJSON);
-
-        if (!validatedFields.success) {
-            return {
-                success: false,
-                message: "Validation failed. Ensure all fields are filled correctly.",
-            };
-        }
-        
-        const updatedCertificates = await Promise.all(
-            validatedFields.data.map(async (certificate, index) => {
-                const imageFile = formData.get(`image_${index}`) as File;
-                if (imageFile && imageFile.size > 0) {
-                    const newImageUrl = await uploadImageToCloudinary(imageFile);
-                    return { ...certificate, imageUrl: newImageUrl || certificate.imageUrl };
-                }
-                return certificate;
-            })
-        );
-        
-        await setDoc(doc(db, "siteConfig", "certificates"), { certificates: updatedCertificates });
-
-        revalidatePath("/");
-        revalidatePath("/dashboard/certificates");
-
-        return { success: true, message: "Certificates section updated successfully!", data: JSON.stringify(updatedCertificates) };
-    } catch (error) {
-        console.error("Error updating certificates data:", error);
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-        return { success: false, message: `Failed to update certificates: ${errorMessage}` };
+  try {
+    const certificatesDataString = formData.get("certificatesData") as string;
+    if (!certificatesDataString) {
+      return {
+        success: false,
+        message: "No certificates data provided.",
+      };
     }
+
+    const certificatesDataJSON = JSON.parse(certificatesDataString);
+    const validatedFields = certificatesFormSchema.safeParse(certificatesDataJSON);
+
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        message: "Validation failed. Ensure all fields are filled correctly.",
+      };
+    }
+
+    const updatedCertificates = await Promise.all(
+      validatedFields.data.certificatesData.map(async (certificate, index) => {
+        const imageFile = formData.get(`image_${index}`) as File;
+        if (imageFile && imageFile.size > 0) {
+          const newImageUrl = await uploadImageToCloudinary(imageFile);
+          return { ...certificate, imageUrl: newImageUrl || certificate.imageUrl };
+        }
+        return certificate;
+      })
+    );
+
+    await setDoc(doc(db, "siteConfig", "certificates"), {
+      certificates: updatedCertificates,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/dashboard/certificates");
+
+    return {
+      success: true,
+      message: "Certificates section updated successfully!",
+      data: JSON.stringify(updatedCertificates),
+    };
+  } catch (error) {
+    console.error("Error updating certificates data:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred.";
+    return {
+      success: false,
+      message: `Failed to update certificates: ${errorMessage}`,
+    };
+  }
 }
 
-const contactFormSchema = z.object({
-    name: z.string().min(1, "Name is required."),
-    email: z.string().email("Invalid email address."),
-    inquiryType: z.enum(["work-inquiry", "website-building", "general-question"]),
-    message: z.string().min(10, "Message must be at least 10 characters long."),
-});
+// =================================================================
+// CONTACT FORM ACTIONS
+// =================================================================
 
-type ContactFormValues = z.infer<typeof contactFormSchema>;
-
-type ActionResult = {
-    success: boolean;
-    message?: string | null;
-    errors?: Partial<Record<keyof ContactFormValues, string[]>>;
-};
-
-export async function saveContactMessage(data: ContactFormValues): Promise<ActionResult> {
-    try {
-      const validatedFields = contactFormSchema.safeParse(data);
-  
-      if (!validatedFields.success) {
-        return {
-          success: false,
-          message: "Validation failed.",
-          errors: validatedFields.error.flatten().fieldErrors,
-        };
-      }
-  
-      await addDoc(collection(db, 'contactSubmissions'), {
-        ...validatedFields.data,
-        submittedAt: serverTimestamp(),
-      });
-  
-      revalidatePath("/dashboard/messages");
-  
-      return { success: true, message: "Your message has been sent successfully!" };
-  
-    } catch (error) {
-      console.error("Error saving contact message:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-      return { success: false, message: `Failed to send message: ${errorMessage}` };
-    }
+export async function deleteContactMessage(messageId: string) {
+  if (!messageId) {
+    return { success: false, message: "Message ID is required." };
+  }
+  try {
+    await deleteDoc(doc(db, "contactSubmissions", messageId));
+    revalidatePath("/dashboard/messages");
+    return { success: true, message: "Message deleted successfully." };
+  } catch (error) {
+    console.error("Error deleting contact message:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    return { success: false, message: `Failed to delete message: ${errorMessage}` };
+  }
 }
 
-export type ContactSubmission = {
-    id: string;
-    name: string;
-    email: string;
-    message: string;
-    inquiryType: string;
-    submittedAt: string;
-};
 
 // =================================================================
 // DATA FETCHING
@@ -493,83 +488,74 @@ type SiteData = {
       imageUrl: string;
     };
     skills: z.infer<typeof skillsFormSchema>;
-    projects: z.infer<typeof projectsFormSchema>;
-    certificates: z.infer<typeof certificatesFormSchema>;
+    projects: z.infer<typeof projectsFormSchema>['projectsData'];
+    certificates: z.infer<typeof certificatesFormSchema>['certificatesData'];
 };
-  
-async function getDocumentData(collection: string, docId: string, fallback: any, dataKey: string) {
-    const docRef = doc(db, collection, docId);
-    await setDoc(docRef, {}, { merge: true }); 
-    const docSnap = await getDoc(docRef);
-    const data = docSnap.data();
 
-    if (data && data[dataKey] && Array.isArray(data[dataKey]) && data[dataKey].length > 0) {
-        return data[dataKey];
-    }
-    
-    // If no data, set the fallback and return it
-    await setDoc(docRef, { [dataKey]: fallback }, { merge: true });
-    return fallback;
+async function getDocumentData(docRef: any, fallbackData: any) {
+  await setDoc(docRef, {}, { merge: true });
+  const docSnap = await getDoc(docRef);
+  return docSnap.data() || fallbackData;
 }
 
-function getDefaultSiteData(): SiteData {
-    return {
+export async function getSiteData(): Promise<SiteData> {
+  try {
+    const profileDocRef = doc(db, "siteConfig", "profile");
+    const aboutDocRef = doc(db, "siteConfig", "about");
+    const skillsDocRef = doc(db, "siteConfig", "skills");
+    const projectsDocRef = doc(db, "siteConfig", "projects");
+    const certificatesDocRef = doc(db, "siteConfig", "certificates");
+
+    const [
+      profileData,
+      aboutData,
+      skillsData,
+      projectsData,
+      certificatesData,
+    ] = await Promise.all([
+      getDocumentData(profileDocRef, {
         imageUrl: '/images/karanprofile.jpg',
         name: 'Karan Chavda',
         title: 'Creative Web Developer & UI/UX Enthusiast',
-        bio: "Passionate about building beautiful, functional, and user-friendly web experiences. Let's create something amazing together.",
-        resumeUrl: '/karanresume.pdf',
-        about: {
-            content: defaultAboutContent,
-            imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-        },
-        skills: defaultSkills,
-        projects: defaultProjects,
-        certificates: defaultCertificates,
+        bio: 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
+      }),
+      getDocumentData(aboutDocRef, {
+        content: defaultAboutContent,
+        imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      }),
+      getDocumentData(skillsDocRef, { skills: defaultSkills }),
+      getDocumentData(projectsDocRef, { projects: defaultProjects }),
+      getDocumentData(certificatesDocRef, { certificates: defaultCertificates }),
+    ]);
+
+    return {
+      imageUrl: profileData.imageUrl,
+      name: profileData.name,
+      title: profileData.title,
+      bio: profileData.bio,
+      resumeUrl: '/karanresume.pdf',
+      about: aboutData,
+      skills: skillsData.skills,
+      projects: projectsData.projects,
+      certificates: certificatesData.certificates,
     };
-}
-
-
-export async function getSiteData(): Promise<SiteData> {
-    try {
-        const profileDocRef = doc(db, "siteConfig", "profile");
-        const aboutDocRef = doc(db, "siteConfig", "about");
-        
-        await Promise.all([
-            setDoc(profileDocRef, {}, { merge: true }),
-            setDoc(aboutDocRef, {}, { merge: true }),
-        ]);
-
-        const [profileDocSnap, aboutDocSnap] = await Promise.all([
-            getDoc(profileDocRef),
-            getDoc(aboutDocRef),
-        ]);
-
-        const profileData = profileDocSnap.data() || {};
-        const aboutData = aboutDocSnap.data() || {};
-
-        const skills = await getDocumentData("siteConfig", "skills", defaultSkills, "skills");
-        const projects = await getDocumentData("siteConfig", "projects", defaultProjects, "projects");
-        const certificates = await getDocumentData("siteConfig", "certificates", defaultCertificates, "certificates");
-        
-        return { 
-            imageUrl: profileData.imageUrl || '/images/karanprofile.jpg',
-            name: profileData.name || 'Karan Chavda',
-            title: profileData.title || 'Creative Web Developer & UI/UX Enthusiast',
-            bio: profileData.bio || "Passionate about building beautiful, functional, and user-friendly web experiences. Let's create something amazing together.",
-            resumeUrl: '/karanresume.pdf',
-            about: {
-                content: aboutData.content || defaultAboutContent,
-                imageUrl: aboutData.imageUrl || "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-            },
-            skills,
-            projects,
-            certificates,
-        };
-    } catch (error) {
-        console.error("Error fetching site data, returning defaults:", error);
-        return getDefaultSiteData();
-    }
+  } catch (error) {
+    console.error("Error fetching site data, returning defaults:", error);
+    return {
+      imageUrl: '/images/karanprofile.jpg',
+      name: 'Karan Chavda',
+      title: 'Creative Web Developer & UI/UX Enthusiast',
+      bio: 'Passionate about building beautiful, functional, and user-friendly web experiences. Let\'s create something amazing together.',
+      resumeUrl: '/karanresume.pdf',
+      about: {
+        content: defaultAboutContent,
+        imageUrl: "https://images.unsplash.com/photo-1515041219749-89347f83291a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtaW5pb258ZW58MHx8fHwxNzQ5MjExMDAxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      },
+      skills: defaultSkills,
+      projects: defaultProjects,
+      certificates: defaultCertificates,
+    };
+  }
 }
 
 export async function getProfileData() {
@@ -583,6 +569,15 @@ export async function getProfileData() {
         about: data.about
     }
 }
+
+export type ContactSubmission = {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    inquiryType: string;
+    submittedAt: string;
+};
 
 export async function getContactSubmissions(): Promise<ContactSubmission[]> {
     try {
