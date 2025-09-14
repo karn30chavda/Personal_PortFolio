@@ -52,14 +52,14 @@ export function Header() {
 
   const DesktopNavLinks = () => (
     navLinks.map((link) => (
-      <Button
+      <Link
         key={link.label}
-        variant="ghost"
-        asChild
-        className="font-medium text-sm"
+        href={link.href}
+        className="group relative text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
-        <Link href={link.href}>{link.label}</Link>
-      </Button>
+        {link.label}
+        <span className="absolute bottom-[-2px] left-0 h-0.5 w-full scale-x-0 bg-primary transition-transform duration-300 ease-out group-hover:scale-x-100"></span>
+      </Link>
     ))
   );
 
@@ -93,7 +93,7 @@ export function Header() {
             </DropdownMenu>
           </div>
         ) : (
-          <nav className="flex items-center space-x-2">
+          <nav className="flex items-center gap-6">
             <DesktopNavLinks />
             <ThemeToggleButton />
           </nav>
