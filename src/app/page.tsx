@@ -7,6 +7,7 @@ import { ProjectsSection } from '@/components/sections/projects-section';
 import { ContactSection } from '@/components/sections/contact-section';
 import { Separator } from '@/components/ui/separator';
 import { CertificatesSection } from '@/components/sections/certificates-section';
+import { SiteFooter } from '@/components/shared/site-footer';
 
 export default function HomePage() {
   return (
@@ -36,12 +37,7 @@ export default function HomePage() {
         <Separator className="my-8 md:my-12 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent dark:via-primary/40" />
       </div>
       <ContactSection />
-       <footer className="w-full py-8 mt-0 border-t border-border/40">
-        <div className="container text-center text-sm text-muted-foreground space-y-1">
-          <p>&copy; {new Date().getFullYear()} Karan Chavda. All rights reserved.</p>
-          <p>Built with Next.js, Tailwind CSS, and Shadcn/UI.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
