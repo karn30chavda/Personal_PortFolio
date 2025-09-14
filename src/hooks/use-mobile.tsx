@@ -6,8 +6,10 @@ const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState(false)
+  const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
+    setIsMounted(true);
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
     
     function checkDevice() {
@@ -20,5 +22,5 @@ export function useIsMobile() {
     return () => mql.removeEventListener("change", checkDevice)
   }, [])
 
-  return isMobile
+  return isMounted ? isMobile : false;
 }
