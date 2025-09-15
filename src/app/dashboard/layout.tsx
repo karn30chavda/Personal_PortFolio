@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { User, Info, LogOut, Menu, Wrench, FolderKanban, Award, Mail } from 'lucide-react';
 import {
   SidebarProvider,
@@ -79,6 +80,19 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const [isMounted, setIsMounted] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+  const router = useRouter();
+
+  const handleTitleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+    if (newCount >= 7) {
+      router.push('/login');
+    } else if (newCount === 1) {
+      router.push('/');
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -97,15 +111,24 @@ export default function DashboardLayout({
     );
   }
 
+  const TitleLink = (
+      <a href="/" onClick={handleTitleClick} className="text-xl font-bold text-primary font-headline cursor-pointer group-data-[state=collapsed]:hidden">
+        Karan Chavda
+      </a>
+  );
+  const MobileTitleLink = (
+      <a href="/" onClick={handleTitleClick} className="text-xl font-bold text-primary font-headline cursor-pointer">
+        Karan Chavda
+      </a>
+  );
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
         {!isMobile && (
           <Sidebar>
             <SidebarHeader>
-              <Link href="/" className="text-xl font-bold text-primary font-headline group-data-[state=collapsed]:hidden">
-                Karan Chavda
-              </Link>
+              {TitleLink}
             </SidebarHeader>
             <SidebarContent>
               <SidebarMenu>
@@ -140,11 +163,7 @@ export default function DashboardLayout({
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6 shrink-0">
             <div className='flex items-center gap-2'>
               {!isMobile && <SidebarTrigger />}
-              {isMobile && (
-                  <Link href="/" className="text-xl font-bold text-primary font-headline">
-                      Karan Chavda
-                  </Link>
-              )}
+              {isMobile && MobileTitleLink}
             </div>
             
             <div className="flex items-center gap-2">
