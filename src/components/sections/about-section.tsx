@@ -3,7 +3,6 @@
 
 import { SectionWrapper } from '@/components/shared/section-wrapper';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { getProfileData } from '@/lib/actions';
 import { useEffect, useState } from 'react';
 
@@ -42,14 +41,10 @@ export function AboutSection() {
   }
 
   return (
-    <SectionWrapper id="about" title="About Me" animationDelay={1}>
+    <SectionWrapper id="about" title="About Me">
       <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-        <motion.div
+        <div
           className="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-xl group"
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <Image
             src={aboutData.imageUrl}
@@ -58,18 +53,14 @@ export function AboutSection() {
             className="transform transition-transform duration-500 group-hover:scale-105 object-cover"
             data-ai-hint="minion character"
           />
-        </motion.div>
-        <motion.div
+        </div>
+        <div
           className="space-y-4 text-lg text-foreground/80 text-center md:text-left"
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
         >
           {paragraphs.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
-        </motion.div>
+        </div>
       </div>
     </SectionWrapper>
   );
