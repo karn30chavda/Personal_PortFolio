@@ -107,7 +107,7 @@ export function CertificatesForm({
 
       fields.forEach((_, index) => {
         const fileInput = (document.querySelector(
-          `input[name='certificatesData[${index}].imageFile']`
+          `input[name='certificatesData.${index}.imageFile']`
         ) as HTMLInputElement);
         if (fileInput?.files?.[0]) {
           formData.append(`image_${index}`, fileInput.files[0]);
@@ -140,7 +140,7 @@ export function CertificatesForm({
                   </div>
                   <FormField
                     control={form.control}
-                    name={`certificatesData[${index}].imageFile` as any} 
+                    name={`certificatesData.${index}.imageFile` as any} 
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="sr-only">Image File</FormLabel>

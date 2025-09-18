@@ -110,7 +110,7 @@ export function ProjectsForm({
 
       fields.forEach((_, index) => {
         const fileInput = (document.querySelector(
-          `input[name='projectsData[${index}].imageFile']`
+          `input[name='projectsData.${index}.imageFile']`
         ) as HTMLInputElement);
         if (fileInput?.files?.[0]) {
           formData.append(`image_${index}`, fileInput.files[0]);
