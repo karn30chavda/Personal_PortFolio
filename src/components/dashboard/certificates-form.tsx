@@ -261,7 +261,7 @@ export function CertificatesForm({
               });
               setImagePreviews([
                 ...imagePreviews,
-                'https://placehold.co/600x400/E2E8F0/A0AEC0?text=Certificate',
+                'https://placehold.co/600x400/E2E8F0/A0AECO?text=Certificate',
               ]);
             }}
           >
@@ -283,3 +283,5 @@ export function CertificatesForm({
     </Form>
   );
 }
+
+    

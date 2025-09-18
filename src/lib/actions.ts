@@ -249,7 +249,7 @@ export async function updateProjectsData(prevState: any, formData: FormData) {
     }
 
     const projectsDataJSON = JSON.parse(projectsDataString);
-    const validatedFields = projectsFormSchema.safeParse(projectsDataJSON);
+    const validatedFields = projectsFormSchema.safeParse({ projectsData: projectsDataJSON });
 
     if (!validatedFields.success) {
       return {
@@ -315,7 +315,7 @@ export async function updateCertificatesData(prevState: any, formData: FormData)
     }
 
     const certificatesDataJSON = JSON.parse(certificatesDataString);
-    const validatedFields = certificatesFormSchema.safeParse(certificatesDataJSON);
+    const validatedFields = certificatesFormSchema.safeParse({ certificatesData: certificatesDataJSON });
 
     if (!validatedFields.success) {
       return {
@@ -620,5 +620,3 @@ export async function getContactSubmissions(): Promise<ContactSubmission[]> {
         return [];
     }
 }
-
-    
